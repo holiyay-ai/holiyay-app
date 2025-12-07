@@ -1,0 +1,51 @@
+# Dependencies (each package has its own)
+node_modules
+packages/*/node_modules
+
+# Git
+.git
+.gitignore
+
+# IDE and editor configs
+.idea
+.vscode
+*.swp
+*.swo
+.DS_Store
+
+# Environment files (secrets should be injected at runtime)
+.env
+.env.*
+!.env.example
+
+# Build artifacts and caches
+dist
+.cache
+*.log
+.next
+.turbo
+
+# Test files
+*.test.ts
+*.spec.ts
+coverage
+
+# Documentation (keep README for reference)
+*.md
+!README.md
+
+# Docker files (no need to copy into image)
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Makefile
+Makefile
+
+# Biome config (linting not needed in container)
+biome.json
+
+# Drizzle folder at root (package has its own)
+drizzle
+
+# Note: packages/api/drizzle migrations ARE included (needed for db:migrate)

@@ -1,0 +1,12 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		"composite": true,
+		"declaration": true,
+		"declarationMap": true
+	},
+	"references": [{ "path": "./packages/api" }, { "path": "./packages/web" }],
+	"include": [],
+	"exclude": ["node_modules", "packages"]
+}

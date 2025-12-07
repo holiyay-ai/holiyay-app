@@ -1,0 +1,51 @@
+# Holiyay Docker Compose - Local Development
+#
+# Simplified configuration for local development.
+# Production runs on Vercel + Supabase.
+#
+# Usage:
+#   docker compose up -d      # Start Postgres
+#   docker compose down       # Stop services
+#   docker compose down -v    # Stop and remove volumes
+
+services:
+    # ============================================
+    # PostgreSQL Database (Local Development)
+    # ============================================
+    db:
+        image: postgres:16-alpine
+        container_name: holiyay-db
+        restart: unless-stopped
+        ports:
+            - "${DB_PORT:-5432}:5432"
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER:-holiyay}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-holiyay}
+            POSTGRES_DB: ${POSTGRES_DB:-holiyay}
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "pg_isready -U ${POSTGRES_USER:-holiyay} -d ${POSTGRES_DB:-holiyay}",
+                ]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+        networks:
+            - holiyay-network
+
+# ============================================
+# Networks
+# ============================================
+networks:
+    holiyay-network:
+        driver: bridge
+
+# ============================================
+# Volumes
+# ============================================
+volumes:
+    pgdata:
+        driver: local

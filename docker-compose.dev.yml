@@ -1,0 +1,98 @@
+# Holiyay Docker Compose - Development Override
+#
+# Optional override for running the full stack in Docker with watch mode.
+# Primarily useful for CI/CD or testing production-like setups locally.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --watch
+#
+# Or use the Makefile:
+#   make docker-dev
+#
+# For normal development, just run:
+#   docker compose up -d          # Start Postgres only
+#   bun run dev                   # Run API with hot reload
+#   bun run dev:web               # Run Next.js with hot reload
+
+services:
+    # ============================================
+    # Backend API Server (Development)
+    # ============================================
+    api:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            target: dev
+        container_name: holiyay-api-dev
+        restart: "no"
+        init: true
+        ports:
+            - "${API_PORT:-3000}:3000"
+        environment:
+            NODE_ENV: development
+            PORT: 3000
+            DATABASE_URL: postgres://${POSTGRES_USER:-holiyay}:${POSTGRES_PASSWORD:-holiyay}@db:5432/${POSTGRES_DB:-holiyay}
+            JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production}
+            AUTH_PROVIDER: jwt
+        depends_on:
+            db:
+                condition: service_healthy
+        networks:
+            - holiyay-network
+        develop:
+            watch:
+                # Sync source files for hot-reload
+                - path: ./packages/api/src
+                  target: /app/packages/api/src
+                  action: sync
+                # Rebuild on config changes
+                - path: ./packages/api/package.json
+                  target: /app/packages/api/package.json
+                  action: rebuild
+                - path: ./bun.lock
+                  target: /app/bun.lock
+                  action: rebuild
+
+    # ============================================
+    # Web Frontend (Development)
+    # ============================================
+    web:
+        build:
+            context: .
+            dockerfile: Dockerfile.web
+            target: dev
+        container_name: holiyay-web-dev
+        restart: "no"
+        init: true
+        ports:
+            - "${WEB_PORT:-3001}:3001"
+        environment:
+            NODE_ENV: development
+            # Internal API URL for server-side requests
+            INTERNAL_API_URL: http://api:3000
+            # Public API URL for client-side requests
+            NEXT_PUBLIC_API_URL: http://localhost:3000
+        depends_on:
+            - api
+        networks:
+            - holiyay-network
+        develop:
+            watch:
+                # Sync source files for hot-reload
+                - path: ./packages/web/src
+                  target: /app/packages/web/src
+                  action: sync
+                # Sync API source (for shared types)
+                - path: ./packages/api/src
+                  target: /app/packages/api/src
+                  action: sync
+                # Rebuild on config changes
+                - path: ./packages/web/package.json
+                  target: /app/packages/web/package.json
+                  action: rebuild
+                - path: ./packages/web/next.config.ts
+                  target: /app/packages/web/next.config.ts
+                  action: rebuild
+                - path: ./bun.lock
+                  target: /app/bun.lock
+                  action: rebuild
