@@ -8,15 +8,13 @@
 import app from "@holiyay/api/app"
 import { handle } from "hono/vercel"
 
-const adaptedApp = app.basePath("/api")
-
 // Re-export the Hono app handlers for Next.js
-export const GET = handle(adaptedApp)
-export const POST = handle(adaptedApp)
-export const PUT = handle(adaptedApp)
-export const PATCH = handle(adaptedApp)
-export const DELETE = handle(adaptedApp)
-export const OPTIONS = handle(adaptedApp)
+export const GET = handle(app)
+export const POST = handle(app)
+export const PUT = handle(app)
+export const PATCH = handle(app)
+export const DELETE = handle(app)
+export const OPTIONS = handle(app)
 
 // Use Node.js runtime for full compatibility with Drizzle/Postgres
 export const runtime = "nodejs"

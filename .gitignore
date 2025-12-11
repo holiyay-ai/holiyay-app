@@ -101,4 +101,3 @@ credentials/
 # Package manager lock files (keep bun.lock, ignore others)
 package-lock.json
 yarn.lock
-pnpm-lock.yaml

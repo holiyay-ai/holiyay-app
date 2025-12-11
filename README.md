@@ -4,7 +4,7 @@
 
 | Layer             | Technology                                                            |
 | ----------------- | --------------------------------------------------------------------- |
-| **Runtime**       | [Bun](https://bun.sh)                                                 |
+| **Runtime**       | [Node.js](https://nodejs.org) + [pnpm](https://pnpm.io)               |
 | **API Framework** | [Hono](https://hono.dev)                                              |
 | **Frontend**      | [Next.js](https://nextjs.org)                                         |
 | **Database**      | PostgreSQL with [Drizzle ORM](https://orm.drizzle.team)               |
@@ -20,7 +20,7 @@ This is a **monorepo** with two packages:
 ```
 holiyay/
 ├── packages/
-│   ├── api/          # Hono backend (Bun)
+│   ├── api/          # Hono backend (Node)
 │   └── web/          # Next.js frontend (mounts API)
 ```
 
@@ -127,7 +127,7 @@ holiyay/
 
 ## Prerequisites
 
-- [Bun](https://bun.sh) v1.0+
+- [pnpm](https://pnpm.io) v8.x (or Corepack)
 - [Node.js](https://nodejs.org) v20+ (for Next.js)
 - [Docker](https://docker.com) (for local PostgreSQL)
 
@@ -136,7 +136,7 @@ holiyay/
 ### 1. Install dependencies
 
 ```bash
-bun install
+pnpm -w install
 ```
 
 ### 2. Start the database
@@ -296,7 +296,7 @@ The entire app deploys to Vercel as a single Next.js application.
 
 2. **Configure build settings:**
    - Root Directory: `packages/web`
-   - Build Command: `npm run build`
+   - Build Command: `pnpm run build`
    - Output Directory: `.next`
 
 3. **Set environment variables:**
@@ -340,9 +340,9 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 
 ## Design Decisions
 
-### Monorepo with Bun Workspaces
+### Monorepo with pnpm Workspaces
 
-Simple workspace configuration without extra tooling like Turborepo. Bun handles dependency resolution across packages.
+Simple workspace configuration using pnpm workspaces. pnpm handles dependency resolution across packages.
 
 ### Auth Adapter Pattern
 

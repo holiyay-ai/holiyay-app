@@ -1,8 +1,38 @@
 import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-	// Enable standalone output for Docker deployments
-	output: "standalone",
+  // Enable standalone output only when running in Docker
+  ...(() => {
+   // Respect an explicit env var if present
+   const envDocker =
+    process.env.DOCKER === "true" ||
+    process.env.DOCKER === "1" ||
+    process.env.IS_DOCKER === "true" ||
+    process.env.IS_DOCKER === "1";
+
+   let isDocker = !!envDocker;
+
+   if (!isDocker) {
+    try {
+     // Dynamically require fs so we don't add a top-level import
+     const fs = require("node:fs");
+
+     // Common Docker indicator file
+     if (fs.existsSync("/.dockerenv")) {
+      isDocker = true;
+     } else if (fs.existsSync("/proc/1/cgroup")) {
+      const cgroup = fs.readFileSync("/proc/1/cgroup", "utf8");
+      if (/docker|kubepods|containerd/.test(cgroup)) {
+       isDocker = true;
+      }
+     }
+    } catch {
+     // Ignore and fall back to environment variable only
+    }
+   }
+
+   return isDocker ? { output: "standalone" } : {};
+  })(),
 
 	// Transpile the API package for use in route handlers
 	transpilePackages: ["@holiyay/api"],

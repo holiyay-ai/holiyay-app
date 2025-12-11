@@ -19,7 +19,7 @@ import { calendarRoutes } from "~/routes/calendars"
 import { itemRoutes } from "~/routes/items"
 import { shareRoutes } from "~/routes/shares"
 
-const app = new Hono()
+const app = new Hono().basePath("/api")
 
 function getCorsOrigins(): string | string[] {
 	const originsEnv = process.env.CORS_ORIGINS

@@ -11,8 +11,8 @@
 #
 # For normal development, just run:
 #   docker compose up -d          # Start Postgres only
-#   bun run dev                   # Run API with hot reload
-#   bun run dev:web               # Run Next.js with hot reload
+#   pnpm --filter @holiyay/api run dev   # Run API with hot reload
+#   pnpm --filter @holiyay/web run dev   # Run Next.js with hot reload
 
 services:
     # ============================================
@@ -49,8 +49,8 @@ services:
                 - path: ./packages/api/package.json
                   target: /app/packages/api/package.json
                   action: rebuild
-                - path: ./bun.lock
-                  target: /app/bun.lock
+                - path: ./pnpm-lock.yaml
+                  target: /app/pnpm-lock.yaml
                   action: rebuild
 
     # ============================================
@@ -93,6 +93,6 @@ services:
                 - path: ./packages/web/next.config.ts
                   target: /app/packages/web/next.config.ts
                   action: rebuild
-                - path: ./bun.lock
-                  target: /app/bun.lock
+                - path: ./pnpm-lock.yaml
+                  target: /app/pnpm-lock.yaml
                   action: rebuild
