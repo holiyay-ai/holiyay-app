@@ -67,13 +67,11 @@ desktop.ini
 .docker/
 
 # Database
-*.sql
-*.sqlite
 *.db
 pgdata/
 
 # Drizzle
-drizzle/meta/_journal.json.bak
+migrations/meta/_journal.json.bak
 
 # Temporary files
 tmp/
