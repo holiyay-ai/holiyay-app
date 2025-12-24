@@ -6,7 +6,7 @@
  * invited with view or edit permissions. Share tokens provide public read access.
  */
 
-import type { CalendarShare } from "../../db/schema"
+import type { CalendarShare } from "../db/schema"
 import {
 	ConflictError,
 	ForbiddenError,

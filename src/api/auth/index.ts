@@ -22,12 +22,4 @@ export { AuthError } from "./adapter"
 export { type AuthProvider, getAuthAdapter, resetAuthAdapter } from "./factory"
 // Individual adapters (for direct use if needed)
 // JWT utilities (for middleware and direct token operations)
-export {
-	type AuthPayload,
-	createJwtAuthAdapter,
-	createToken,
-	decodeToken,
-	extractBearerToken,
-	verifyToken,
-} from "./jwt.auth"
 export { createSupabaseAuthAdapter } from "./supabase.auth"

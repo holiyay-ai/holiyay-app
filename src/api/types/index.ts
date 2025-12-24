@@ -16,7 +16,7 @@ export type {
 	NewItem,
 	NewUser,
 	User,
-} from "../../db/schema"
+} from "../db/schema"
 
 export interface AuthUser {
 	id: string
@@ -27,13 +27,13 @@ export interface AuthUser {
 
 export interface AuthTokens {
 	accessToken: string
-	refreshToken?: string
+	refreshToken?: string | undefined
 	expiresIn: number
 }
 
 export interface AuthResult {
 	user: AuthUser
-	tokens: AuthTokens
+	tokens?: AuthTokens | undefined
 }
 
 export interface CalendarWithRole {

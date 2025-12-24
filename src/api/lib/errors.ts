@@ -31,6 +31,7 @@ export type ErrorCode =
 	| "INTERNAL_ERROR"
 	| "SERVICE_UNAVAILABLE"
 	| "AUTH_ERROR"
+	| "EMAIL_NOT_CONFIRMED"
 
 export class AppError extends Error {
 	public readonly statusCode: ContentfulStatusCode
@@ -101,6 +102,13 @@ export class ServiceUnavailableError extends AppError {
 	constructor(service: string, code: ErrorCode = "SERVICE_UNAVAILABLE") {
 		super(`${service} is not available`, code, 503)
 		this.name = "ServiceUnavailableError"
+	}
+}
+
+export class EmailRequiredConfirmation extends AppError {
+	constructor(message: string = "Email address needs to be confirmed") {
+		super(message, "EMAIL_NOT_CONFIRMED", 401)
+		this.name = "EmailRequiredConfirmation"
 	}
 }
 

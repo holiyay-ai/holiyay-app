@@ -28,11 +28,29 @@ import type {
 // Generic API response type
 type ApiResponse<T> =
 	| { data: T; error: null }
-	| { data: null; error: { message: string; code?: string } }
+	| { data: null; error: { message: string; code?: string; cause?: unknown } }
 
 // Helper to create authorization header
 function authHeader(token: string): HeadersInit {
 	return { Authorization: `Bearer ${token}` }
+}
+
+async function responseJsonSafe<T>(
+	response: Response,
+): Promise<ApiResponse<T>> {
+	try {
+		const data = await response.json()
+		return data
+	} catch (err) {
+		return {
+			data: null,
+			error: {
+				message: "Invalid JSON response",
+				code: "INVALID_JSON",
+				cause: err,
+			},
+		}
+	}
 }
 
 // Generic fetch wrapper with error handling
@@ -45,19 +63,24 @@ async function fetchApi<T>(
 			...options,
 			headers: {
 				"Content-Type": "application/json",
+				"x-vercel-protection-bypass":
+					process.env.VERCEL_PROTECTION_BYPASS_KEY ||
+					process.env.NEXT_VERCEL_PROTECTION_BYPASS_KEY ||
+					process.env.NEXT_STAGING_BYPASS_KEY ||
+					"",
 				...options.headers,
 			},
 			credentials: options.credentials || "include",
 		})
 
-		const data = await response.json()
+		const data = await responseJsonSafe<T>(response)
 
-		if (!response.ok) {
+		if (!response.ok || data.error) {
 			return {
 				data: null,
-				error: {
-					message: data.error || "An error occurred",
-					code: data.code,
+				error: data.error || {
+					message: `API request failed with status ${response.status}`,
+					code: "API_ERROR",
 				},
 			}
 		}
@@ -93,6 +116,8 @@ interface AuthResponse {
 	user: AuthUser
 	accessToken: string
 	expiresIn: number
+	code?: string
+	message?: string
 }
 
 export const auth = {
@@ -120,6 +145,17 @@ export const auth = {
 	async me(token: string): Promise<ApiResponse<{ user: AuthUser }>> {
 		return fetchApi<{ user: AuthUser }>(`${await getBaseUrl()}/auth/me`, {
 			headers: authHeader(token),
+		})
+	},
+
+	async oauthCallback(
+		accessToken: string,
+		refreshToken?: string,
+		expiresIn?: number,
+	): Promise<ApiResponse<AuthResponse>> {
+		return fetchApi<AuthResponse>(`${await getBaseUrl()}/auth/oauth/callback`, {
+			method: "POST",
+			body: JSON.stringify({ accessToken, refreshToken, expiresIn }),
 		})
 	},
 }

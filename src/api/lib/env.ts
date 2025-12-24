@@ -11,14 +11,10 @@ import { createLogger } from "./logger"
 const log = createLogger("env")
 
 const envSchema = z.object({
-	DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
-	JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),
 	OPENAI_API_KEY: z.string().optional(),
 	WEATHER_API_KEY: z.string().optional(),
 	PORT: z.coerce.number().default(3000),
-	NODE_ENV: z
-		.enum(["development", "production", "test"])
-		.default("development"),
+	APP_ENV: z.enum(["staging", "production"]).default("staging"),
 	CORS_ORIGINS: z.string().optional(),
 	SERVERLESS: z.string().optional(),
 	VERCEL: z.string().optional(),
@@ -37,15 +33,11 @@ export function isServerless(env: Env): boolean {
 }
 
 export function isProduction(env: Env): boolean {
-	return env.NODE_ENV === "production"
+	return env.APP_ENV === "production"
 }
 
-export function isDevelopment(env: Env): boolean {
-	return env.NODE_ENV === "development"
-}
-
-export function isTest(env: Env): boolean {
-	return env.NODE_ENV === "test"
+export function isStaging(env: Env): boolean {
+	return env.APP_ENV === "staging"
 }
 
 function validateEnv(): Env {
@@ -53,7 +45,7 @@ function validateEnv(): Env {
 
 	if (!result.success) {
 		log.error(
-			{ errors: result.error.format() },
+			{ errors: z.treeifyError(result.error) },
 			"Invalid environment variables",
 		)
 		process.exit(1)

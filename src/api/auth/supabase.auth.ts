@@ -1,8 +1,7 @@
 /**
  * Supabase Auth Adapter
  *
- * Authentication adapter for Supabase Auth. Used in production when
- * AUTH_PROVIDER=supabase. Handles user registration, login, and token
+ * Authentication adapter for Supabase Auth. Handles user registration, login, and token
  * verification via Supabase's auth service.
  *
  * Requires environment variables:
@@ -11,6 +10,9 @@
  */
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js"
+import { getSupabaseAdmin } from "../db"
+import { logger } from "../lib/logger"
+import { AppError } from "../types"
 import {
 	type AuthAdapter,
 	AuthError,
@@ -23,25 +25,29 @@ import {
 
 let supabaseClient: SupabaseClient | null = null
 
-function getSupabaseClient(): SupabaseClient {
+export function getSupabaseClient(): SupabaseClient {
 	if (supabaseClient) {
 		return supabaseClient
 	}
 
 	const url = process.env.SUPABASE_URL
-	const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+	const anonKey = process.env.SUPABASE_ANON_KEY
 
 	if (!url) {
-		throw new Error("SUPABASE_URL environment variable is required")
-	}
-
-	if (!serviceRoleKey) {
-		throw new Error(
-			"SUPABASE_SERVICE_ROLE_KEY environment variable is required",
+		throw new AppError(
+			"SUPABASE_URL environment variable is required",
+			"INTERNAL_ERROR",
 		)
 	}
 
-	supabaseClient = createClient(url, serviceRoleKey, {
+	if (!anonKey) {
+		throw new AppError(
+			"SUPABASE_ANON_KEY environment variable is required",
+			"INTERNAL_ERROR",
+		)
+	}
+
+	supabaseClient = createClient(url, anonKey, {
 		auth: {
 			autoRefreshToken: false,
 			persistSession: false,
@@ -53,6 +59,10 @@ function getSupabaseClient(): SupabaseClient {
 
 function mapSupabaseError(message: string): AuthError {
 	const lowerMessage = message.toLowerCase()
+
+	if (lowerMessage.includes("email not confirmed")) {
+		return new AuthError("Email address not confirmed", "EMAIL_NOT_CONFIRMED")
+	}
 
 	if (lowerMessage.includes("already registered")) {
 		return new AuthError(
@@ -98,9 +108,9 @@ export function createSupabaseAuthAdapter(): AuthAdapter {
 				throw mapSupabaseError(error.message)
 			}
 
-			if (!data.user || !data.session) {
+			if (!data.user) {
 				throw new AuthError(
-					"Registration failed: no user or session returned",
+					"Registration failed: no user returned",
 					"UNKNOWN_ERROR",
 				)
 			}
@@ -112,11 +122,13 @@ export function createSupabaseAuthAdapter(): AuthAdapter {
 					name: data.user.user_metadata?.name ?? input.name,
 					avatarUrl: data.user.user_metadata?.avatar_url ?? null,
 				},
-				tokens: {
-					accessToken: data.session.access_token,
-					refreshToken: data.session.refresh_token,
-					expiresIn: data.session.expires_in ?? 3600,
-				},
+				...(data.session && {
+					tokens: {
+						accessToken: data.session.access_token,
+						refreshToken: data.session.refresh_token,
+						expiresIn: data.session.expires_in ?? 3600,
+					},
+				}),
 			}
 		},
 
@@ -155,7 +167,7 @@ export function createSupabaseAuthAdapter(): AuthAdapter {
 		},
 
 		async logout(accessToken: string): Promise<void> {
-			const supabase = getSupabaseClient()
+			const supabase = getSupabaseAdmin()
 
 			// Sign out the user associated with this token
 			// Note: Supabase's signOut invalidates the session server-side
@@ -202,11 +214,14 @@ export function createSupabaseAuthAdapter(): AuthAdapter {
 		},
 
 		async getUserById(id: string): Promise<AuthUser | null> {
-			const supabase = getSupabaseClient()
+			const supabase = getSupabaseAdmin()
 
 			const { data, error } = await supabase.auth.admin.getUserById(id)
 
 			if (error || !data.user) {
+				if (error) {
+					logger.error(`Error fetching user by ID ${id}: ${error.message}`)
+				}
 				return null
 			}
 
@@ -219,7 +234,7 @@ export function createSupabaseAuthAdapter(): AuthAdapter {
 		},
 
 		async getUserByEmail(email: string): Promise<AuthUser | null> {
-			const supabase = getSupabaseClient()
+			const supabase = getSupabaseAdmin()
 
 			// Supabase doesn't have a direct "get by email" for admin
 			// We need to list users and filter, or use a different approach

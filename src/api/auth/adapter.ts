@@ -21,7 +21,7 @@ export interface AuthTokens {
 
 export interface AuthResult {
 	user: AuthUser
-	tokens: AuthTokens
+	tokens?: AuthTokens | undefined
 }
 
 export interface RegisterInput {
@@ -54,6 +54,7 @@ export type AuthErrorCode =
 	| "WEAK_PASSWORD"
 	| "INVALID_EMAIL"
 	| "UNKNOWN_ERROR"
+	| "EMAIL_NOT_CONFIRMED"
 
 export class AuthError extends Error {
 	constructor(

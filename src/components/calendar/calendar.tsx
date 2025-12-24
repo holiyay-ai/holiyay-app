@@ -1,8 +1,6 @@
 "use client"
 
-import { Portal } from "@radix-ui/react-portal"
-import { Plus } from "lucide-react"
-import { useLayoutEffect, useState } from "react"
+import { CalendarIcon, Plus } from "lucide-react"
 import { Button } from "../ui/button"
 import { Card } from "../ui/card"
 import {
@@ -11,32 +9,31 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu"
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "../ui/empty"
 import { Input } from "../ui/input"
-import { CalendarProvider } from "./calendar-context"
+import { Portal } from "../ui/portal"
+import { CalendarProvider, useCalendar } from "./calendar-context"
 
 export default function Calendar() {
 	return (
 		<CalendarProvider>
 			<Controls />
-			<div className="grid grid-cols-7 gap-2 w-full"></div>
+			<Grid />
 		</CalendarProvider>
 	)
 }
 
 function Controls() {
-	const [headerContainer, setHeaderContainer] = useState(() =>
-		document.getElementById("header-center"),
-	)
-	useLayoutEffect(() => {
-		if (!headerContainer) {
-			setHeaderContainer(document.getElementById("header-center"))
-		}
-	}, [headerContainer])
-	if (!headerContainer) {
-		return null
-	}
+	const { calendar } = useCalendar()
 	return (
-		<Portal container={document.getElementById("header-center")} asChild>
+		<Portal target="#header-center">
 			<div className="flex items-center gap-2 w-full">
 				<Input className="w-full flex-1" placeholder="Search in your agenda" />
 				<DropdownMenu>
@@ -47,12 +44,42 @@ function Controls() {
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="center">
-						<DropdownMenuItem>Item</DropdownMenuItem>
+						<DropdownMenuItem>Plan</DropdownMenuItem>
+						<DropdownMenuItem disabled={!calendar}>Item</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</div>
 		</Portal>
 	)
+}
+
+function EmptyState() {
+	return (
+		<div className="flex-1">
+			<Empty>
+				<EmptyHeader>
+					<EmptyMedia variant="icon">
+						<CalendarIcon />
+					</EmptyMedia>
+					<EmptyTitle>No plans found!</EmptyTitle>
+					<EmptyDescription>
+						You have not created any plans yet.
+					</EmptyDescription>
+				</EmptyHeader>
+				<EmptyContent>
+					<Button>Create your first plan</Button>
+				</EmptyContent>
+			</Empty>
+		</div>
+	)
+}
+
+function Grid() {
+	const { calendars } = useCalendar()
+	if (calendars.length === 0) {
+		return <EmptyState />
+	}
+	return <div className="grid grid-cols-7 gap-2 w-full"></div>
 }
 
 function _Day() {

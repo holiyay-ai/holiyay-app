@@ -13,6 +13,7 @@ import { AuthError } from "../auth/adapter"
 import { getAuthAdapter } from "../auth/factory"
 import {
 	ConflictError,
+	EmailRequiredConfirmation,
 	NotFoundError,
 	UnauthorizedError,
 	ValidationError,
@@ -45,6 +46,8 @@ function mapAuthError(error: unknown): never {
 			case "INVALID_TOKEN":
 			case "TOKEN_EXPIRED":
 				throw new UnauthorizedError(error.message, error.code)
+			case "EMAIL_NOT_CONFIRMED":
+				throw new EmailRequiredConfirmation(error.message)
 			default:
 				throw new UnauthorizedError(error.message, "AUTH_ERROR")
 		}
@@ -98,6 +101,30 @@ export const authService = {
 	async getUserByEmail(email: string): Promise<AuthUser | null> {
 		const adapter = getAuthAdapter()
 		return await adapter.getUserByEmail(email)
+	},
+
+	async exchangeOAuthSession(input: {
+		accessToken: string
+		refreshToken?: string
+		expiresIn?: number
+	}): Promise<AuthResult> {
+		const adapter = getAuthAdapter()
+
+		// verify token using the adapter (supabase adapter checks supabase.auth.getUser)
+		const user = await adapter.verifyToken(input.accessToken)
+		if (!user) {
+			// keep error types consistent
+			throw new UnauthorizedError("Invalid or expired token")
+		}
+
+		return {
+			user,
+			tokens: {
+				accessToken: input.accessToken,
+				refreshToken: input.refreshToken,
+				expiresIn: input.expiresIn ?? 3600,
+			},
+		}
 	},
 }
 

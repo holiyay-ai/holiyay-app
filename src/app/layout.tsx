@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import "./globals.css"
 import localFont from "next/font/local"
+import { QueryProvider } from "@/components/query-provider"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { AuthProvider } from "@/lib/auth-context"
@@ -68,12 +69,14 @@ export default function RootLayout({
 	return (
 		<html lang="en" className={MiSans.className} suppressHydrationWarning>
 			<body>
-				<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-					<AuthProvider>
-						{children}
-						<Toaster position="top-center" />
-					</AuthProvider>
-				</ThemeProvider>
+				<QueryProvider>
+					<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+						<AuthProvider>
+							{children}
+							<Toaster position="top-center" />
+						</AuthProvider>
+					</ThemeProvider>
+				</QueryProvider>
 			</body>
 		</html>
 	)

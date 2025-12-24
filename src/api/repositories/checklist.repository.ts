@@ -1,19 +1,30 @@
 /**
- * Checklist Repository
- *
- * Database access layer for checklists. Checklists are associated with calendars
- * and contain an array of items (text + checked status). Supports AI-generated
- * checklists with the aiGenerated flag for tracking.
+ * Checklist Repository (Supabase)
  */
 
-import { eq } from "drizzle-orm"
-import { db } from "../../db"
-import { type Checklist, checklists, type NewChecklist } from "../../db/schema"
+import { getSupabaseAdmin } from "@/api/db"
+import type { DbChecklistInsert, DbChecklistRow } from "@/api/db/schema"
+import {
+	type Checklist,
+	type ChecklistItem,
+	checklists,
+	type NewChecklist,
+} from "../db/schema"
+import { AppError } from "../types"
 
-export interface ChecklistItem {
-	text: string
-	checked: boolean
+function mapRow(row: DbChecklistRow): Checklist {
+	return {
+		id: row.id,
+		calendarId: row.calendar_id,
+		title: row.title,
+		items: (row.items as ChecklistItem[]) ?? [],
+		aiGenerated: !!row.ai_generated,
+		createdAt: new Date(row.created_at),
+		updatedAt: new Date(row.updated_at),
+	}
 }
+
+export type { ChecklistItem }
 
 export interface UpdateChecklistData {
 	title?: string
@@ -22,73 +33,81 @@ export interface UpdateChecklistData {
 
 export const checklistRepository = {
 	async findById(id: string): Promise<Checklist | null> {
-		const [checklist] = await db
-			.select()
+		const supabase = getSupabaseAdmin()
+		const { data, error } = await supabase
 			.from(checklists)
-			.where(eq(checklists.id, id))
-			.limit(1)
-
-		return checklist ?? null
+			.select("*")
+			.eq("id", id)
+			.maybeSingle()
+		if (error) throw new AppError(error.message, "INTERNAL_ERROR")
+		return data ? mapRow(data) : null
 	},
 
 	async findByCalendarId(calendarId: string): Promise<Checklist[]> {
-		return await db
-			.select()
+		const supabase = getSupabaseAdmin()
+		const { data, error } = await supabase
 			.from(checklists)
-			.where(eq(checklists.calendarId, calendarId))
+			.select("*")
+			.eq("calendar_id", calendarId)
+		if (error) throw new AppError(error.message, "INTERNAL_ERROR")
+		return (data ?? []).map(mapRow)
 	},
 
 	async create(data: NewChecklist): Promise<Checklist> {
-		const [checklist] = await db.insert(checklists).values(data).returning()
-
-		if (!checklist) {
-			throw new Error("Failed to create checklist")
+		const supabase = getSupabaseAdmin()
+		const insertPayload: DbChecklistInsert = {
+			calendar_id: data.calendarId,
+			title: data.title,
+			items: data.items,
+			ai_generated: data.aiGenerated ?? false,
 		}
 
-		return checklist
+		const { data: row, error } = await supabase
+			.from(checklists)
+			.insert(insertPayload)
+			.select()
+			.maybeSingle()
+		if (error) throw new AppError(error.message, "INTERNAL_ERROR")
+		if (!row) throw new AppError("Failed to create checklist", "INTERNAL_ERROR")
+		return mapRow(row as DbChecklistRow)
 	},
 
 	async update(
 		id: string,
 		data: UpdateChecklistData,
 	): Promise<Checklist | null> {
-		const updateData: Record<string, unknown> = {
-			updatedAt: new Date(),
-		}
+		const updateData: Record<string, unknown> = {}
+		if (data.title !== undefined) updateData.title = data.title
+		if (data.items !== undefined) updateData.items = data.items
+		updateData.updated_at = new Date().toISOString()
 
-		if (data.title !== undefined) {
-			updateData.title = data.title
-		}
-
-		if (data.items !== undefined) {
-			updateData.items = data.items
-		}
-
-		const [updated] = await db
-			.update(checklists)
-			.set(updateData)
-			.where(eq(checklists.id, id))
-			.returning()
-
-		return updated ?? null
+		const supabase = getSupabaseAdmin()
+		const { data: row, error } = await supabase
+			.from(checklists)
+			.update(updateData)
+			.eq("id", id)
+			.select()
+			.maybeSingle()
+		if (error) throw new AppError(error.message, "INTERNAL_ERROR")
+		return row ? mapRow(row) : null
 	},
 
 	async delete(id: string): Promise<boolean> {
-		const result = await db
-			.delete(checklists)
-			.where(eq(checklists.id, id))
-			.returning({ id: checklists.id })
-
-		return result.length > 0
+		const supabase = getSupabaseAdmin()
+		const { error } = await supabase.from(checklists).delete().eq("id", id)
+		if (error) throw new AppError(error.message, "INTERNAL_ERROR")
+		return true
 	},
 
 	async deleteByCalendarId(calendarId: string): Promise<number> {
-		const result = await db
-			.delete(checklists)
-			.where(eq(checklists.calendarId, calendarId))
-			.returning({ id: checklists.id })
-
-		return result.length
+		const supabase = getSupabaseAdmin()
+		const { data, error } = await supabase
+			.from(checklists)
+			.delete()
+			.eq("calendar_id", calendarId)
+			.select("id")
+		if (error) throw new AppError(error.message, "INTERNAL_ERROR")
+		return (data ?? []).length
 	},
 
 	async toggleItem(
@@ -96,19 +115,11 @@ export const checklistRepository = {
 		itemIndex: number,
 	): Promise<Checklist | null> {
 		const checklist = await this.findById(checklistId)
-
-		if (!checklist) {
-			return null
-		}
-
+		if (!checklist) return null
 		const items = checklist.items as ChecklistItem[]
-
-		if (itemIndex < 0 || itemIndex >= items.length || !items?.[itemIndex]) {
+		if (itemIndex < 0 || itemIndex >= items.length || !items?.[itemIndex])
 			return null
-		}
-
 		items[itemIndex].checked = !items[itemIndex].checked
-
 		return await this.update(checklistId, { items })
 	},
 }

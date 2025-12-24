@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { ViewTransition } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
 import { ModeToggle } from "./mode-toggle"
@@ -50,27 +51,33 @@ export function Header({
 				id="header-right"
 			>
 				{isAuthenticated && user && (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="outline">{user.name}</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							<DropdownMenuLabel>My Account</DropdownMenuLabel>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
-							<DropdownMenuSeparator />
-							<Link href="/terms" passHref>
-								<DropdownMenuItem>Terms of Service</DropdownMenuItem>
-							</Link>
-							<Link href="/privacy" passHref>
-								<DropdownMenuItem>Privacy policy</DropdownMenuItem>
-							</Link>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					<ViewTransition>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="outline" className="rounded-full">
+									{user.name}
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								<DropdownMenuLabel>My Account</DropdownMenuLabel>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
+								<DropdownMenuSeparator />
+								<Link href="/terms" passHref>
+									<DropdownMenuItem>Terms of Service</DropdownMenuItem>
+								</Link>
+								<Link href="/privacy" passHref>
+									<DropdownMenuItem>Privacy policy</DropdownMenuItem>
+								</Link>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</ViewTransition>
 				)}
-				<ModeToggle />
+				<ViewTransition>
+					<ModeToggle />
+				</ViewTransition>
 			</section>
 		</header>
 	)

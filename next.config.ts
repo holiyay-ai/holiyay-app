@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
 		},
 		viewTransition: true,
 	},
+	devIndicators: false,
 }
 
 export default nextConfig

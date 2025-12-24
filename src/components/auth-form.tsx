@@ -10,6 +10,7 @@ import { toast } from "sonner"
 import { loginAction } from "@/actions/login-action"
 import { registerAction } from "@/actions/register-action"
 import { loginSchema, registerSchema } from "@/api/lib/schemas"
+import { GoogleIcon } from "@/assets/google-icon.svg"
 import { useAuth } from "@/lib/auth-context"
 import { GridBackground } from "./grid-background"
 import { Button } from "./ui/button"
@@ -24,8 +25,10 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "./ui/dialog"
+import { Divider } from "./ui/divider"
 import { Field, FieldError, FieldGroup, FieldLabel } from "./ui/field"
 import { Input } from "./ui/input"
+import { Spinner } from "./ui/spinner"
 
 type AuthFormProps = {
 	type: "login" | "register"
@@ -37,6 +40,45 @@ export function AuthForm({ type }: AuthFormProps) {
 			<GridBackground />
 			{Form}
 		</>
+	)
+}
+
+function SignInWithGoogleButton({ disabled }: { disabled?: boolean }) {
+	function onClick() {
+		// Redirect to server-side OAuth endpoint which will forward to Supabase
+		window.location.assign(`/api/auth/oauth/google`)
+	}
+
+	return (
+		<Button
+			size="lg"
+			className="w-full"
+			onClick={onClick}
+			disabled={disabled}
+			aria-label="Sign in with Google"
+		>
+			<GoogleIcon />
+			Sign in with Google
+		</Button>
+	)
+}
+
+function SignUpWithGoogleButton({ disabled }: { disabled?: boolean }) {
+	function onClick() {
+		window.location.assign(`/api/auth/oauth/google`)
+	}
+
+	return (
+		<Button
+			size="lg"
+			className="w-full"
+			onClick={onClick}
+			disabled={disabled}
+			aria-label="Sign up with Google"
+		>
+			<GoogleIcon />
+			Sign up with Google
+		</Button>
 	)
 }
 
@@ -71,6 +113,8 @@ function LoginForm() {
 				<CardTitle>Login into Holiyay</CardTitle>
 			</CardHeader>
 			<CardContent>
+				<SignInWithGoogleButton disabled={isPending} />
+				<Divider>Or</Divider>
 				<form onSubmit={onSubmit}>
 					<FieldGroup>
 						<Field data-invalid={!!form.formState.errors.email}>
@@ -98,6 +142,7 @@ function LoginForm() {
 						<Field orientation="horizontal" className="w-full">
 							<ForgotPasswordDialog disabled={isPending} />
 							<Button disabled={isPending} type="submit" className="grow">
+								{isPending && <Spinner />}
 								Login
 							</Button>
 						</Field>
@@ -133,6 +178,12 @@ function RegisterForm() {
 		startTransition(async () => {
 			const result = await registerAction(data.name, data.email, data.password)
 			if (result.data) {
+				if (result.data.code === "EMAIL_VERIFICATION_REQUIRED") {
+					toast.success(
+						`Sign up successful. Please check your email ${result.data.user.email} to verify your account in order to sign in.`,
+					)
+					return
+				}
 				await auth.refreshUser()
 				router.push("/")
 			} else {
@@ -147,6 +198,8 @@ function RegisterForm() {
 				<CardTitle>Create an account for Holiyay</CardTitle>
 			</CardHeader>
 			<CardContent>
+				<SignUpWithGoogleButton disabled={isPending} />
+				<Divider>Or</Divider>
 				<form onSubmit={onSubmit}>
 					<FieldGroup>
 						<Field data-invalid={!!form.formState.errors.name}>
@@ -184,6 +237,7 @@ function RegisterForm() {
 						</Field>
 						<Field orientation="horizontal" className="w-full">
 							<Button type="submit" className="grow" disabled={isPending}>
+								{isPending && <Spinner />}
 								Create Account
 							</Button>
 						</Field>

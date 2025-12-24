@@ -6,7 +6,7 @@
  * unified list with role indicators (owner/shared) and permission levels (view/edit).
  */
 
-import type { Calendar, NewCalendar } from "../../db/schema"
+import type { Calendar, NewCalendar } from "../db/schema"
 import { ForbiddenError, NotFoundError } from "../lib/errors"
 import { calendarRepository } from "../repositories/calendar.repository"
 import { itemRepository } from "../repositories/item.repository"
@@ -109,7 +109,7 @@ export const calendarService = {
 		const data: NewCalendar = {
 			ownerId: userId,
 			name: input.name,
-			destination: input.destination,
+			destination: input.destination ?? null,
 			startDate: input.startDate,
 			endDate: input.endDate,
 		}

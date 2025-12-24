@@ -8,19 +8,24 @@
  * Works with HTTP-only cookies for secure session management.
  */
 
+import { usePathname } from "next/navigation"
 import {
 	createContext,
 	type ReactNode,
+	useCallback,
 	useContext,
 	useEffect,
+	useRef,
 	useState,
 } from "react"
 import { getSessionCookie } from "@/actions/get-session-cookie"
 import type { AuthUser } from "@/api/types"
 import api from "./api"
+import { checkIfExpired } from "./jwt"
 
 interface AuthContextValue {
 	user: AuthUser | null
+	sessionToken: string | null
 	isLoading: boolean
 	isAuthenticated: boolean
 	logout: () => Promise<void>
@@ -29,31 +34,70 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
+function useIntervalTokenState(initialValue: string | null) {
+	const [value, _setValue] = useState(initialValue)
+	const intervalRef = useRef<NodeJS.Timeout | null>(null)
+
+	const setValue = useCallback(
+		(val: string | null) => {
+			_setValue(val)
+
+			if (intervalRef.current) {
+				clearInterval(intervalRef.current)
+			}
+
+			intervalRef.current = setInterval(() => {
+				if (checkIfExpired(value)) {
+					_setValue(null)
+					if (intervalRef.current) {
+						clearInterval(intervalRef.current)
+					}
+				}
+			}, 60 * 1000) // Check every minute
+		},
+		[value],
+	)
+
+	return [value, setValue] as const
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
+	const pathname = usePathname()
 	const [user, setUser] = useState<AuthUser | null>(null)
+	const [sessionToken, setSessionToken] = useIntervalTokenState(null)
 	const [isLoading, setIsLoading] = useState(true)
+
+	const isOnCallbackRoute = pathname.endsWith("/auth/oauth/callback")
 
 	const refreshUser = async () => {
 		try {
 			const token = await getSessionCookie()
+			if (!token) {
+				setUser(null)
+				setSessionToken(null)
+				return
+			}
 			const response = await api.auth.me(token)
 			if (response.data) {
 				setUser(response.data.user)
+				setSessionToken(token)
 			} else {
 				setUser(null)
+				setSessionToken(null)
 			}
 		} catch (error) {
 			console.error("Failed to fetch user:", error)
 			setUser(null)
+			setSessionToken(null)
 		}
 	}
 
 	const logout = async () => {
 		try {
+			setUser(null)
 			const token = await getSessionCookie()
 			await api.auth.logout(token)
-			setUser(null)
-			window.location.href = "/auth?type=login"
+			setSessionToken(null)
 		} catch (error) {
 			console.error("Logout failed:", error)
 		}
@@ -67,11 +111,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			setIsLoading(false)
 		}
 
-		initAuth()
-	}, [])
+		if (!isOnCallbackRoute) initAuth()
+	}, [isOnCallbackRoute])
 
 	const value: AuthContextValue = {
 		user,
+		sessionToken,
 		isLoading,
 		isAuthenticated: !!user,
 		logout,

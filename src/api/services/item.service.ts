@@ -6,7 +6,7 @@
  * Items are ordered within their date using an orderIndex for drag-and-drop support.
  */
 
-import type { Item, NewItem } from "../../db/schema"
+import type { Item, NewItem } from "../db/schema"
 import { ForbiddenError, NotFoundError } from "../lib/errors"
 import { calendarRepository } from "../repositories/calendar.repository"
 import { itemRepository } from "../repositories/item.repository"
@@ -106,12 +106,12 @@ export const itemService = {
 			calendarId,
 			date: input.date,
 			title: input.title,
-			description: input.description,
-			startTime: input.startTime,
-			endTime: input.endTime,
-			location: input.location,
+			description: input.description || null,
+			startTime: input.startTime || null,
+			endTime: input.endTime || null,
+			location: input.location || null,
 			category: input.category ?? "other",
-			affiliateLink: input.affiliateLink,
+			affiliateLink: input.affiliateLink || null,
 			orderIndex,
 		}
 

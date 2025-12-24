@@ -16,7 +16,7 @@ export const PATCH = handle(app)
 export const DELETE = handle(app)
 export const OPTIONS = handle(app)
 
-// Use Node.js runtime for full compatibility with Drizzle/Postgres
+// Use Node.js runtime for full compatibility with server-side Supabase operations
 export const runtime = "nodejs"
 
 // Disable body parsing - Hono handles it

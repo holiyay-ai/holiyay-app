@@ -1,32 +1,20 @@
 /**
  * Auth Adapter Factory
  *
- * Provides environment-based selection of authentication provider.
- * Set AUTH_PROVIDER environment variable to choose:
- * - "jwt" (default): Local JWT auth with database users
- * - "supabase": Supabase Auth for production
- *
  * The factory lazily creates and caches the adapter instance.
  */
 
+import { AppError } from "../types"
 import type { AuthAdapter } from "./adapter"
-import { createJwtAuthAdapter } from "./jwt.auth"
 import { createSupabaseAuthAdapter } from "./supabase.auth"
 
-export type AuthProvider = "jwt" | "supabase"
+export type AuthProvider = "supabase"
 
 let cachedAdapter: AuthAdapter | null = null
 let cachedProvider: AuthProvider | null = null
 
 function getProviderFromEnv(): AuthProvider {
-	const provider = process.env.AUTH_PROVIDER
-
-	if (provider === "supabase") {
-		return "supabase"
-	}
-
-	// Default to JWT for development and standalone deployments
-	return "jwt"
+	return "supabase"
 }
 
 export function getAuthAdapter(provider?: AuthProvider): AuthAdapter {
@@ -42,8 +30,10 @@ export function getAuthAdapter(provider?: AuthProvider): AuthAdapter {
 			cachedAdapter = createSupabaseAuthAdapter()
 			break
 		default:
-			cachedAdapter = createJwtAuthAdapter()
-			break
+			throw new AppError(
+				`Unsupported auth provider: ${selectedProvider}`,
+				"INTERNAL_ERROR",
+			)
 	}
 
 	cachedProvider = selectedProvider

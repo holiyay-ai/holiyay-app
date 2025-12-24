@@ -17,7 +17,6 @@ import { authRoutes } from "@/api/routes/auth"
 import { calendarRoutes } from "@/api/routes/calendars"
 import { itemRoutes } from "@/api/routes/items"
 import { shareRoutes } from "@/api/routes/shares"
-import { checkDbHealth } from "@/db"
 
 const app = new Hono().basePath("/api")
 
@@ -25,7 +24,7 @@ function getCorsOrigins(): string | string[] {
 	const originsEnv = process.env.CORS_ORIGINS
 
 	if (!originsEnv) {
-		if (process.env.NODE_ENV === "production") {
+		if (process.env.APP_ENV === "production") {
 			logger.warn(
 				"CORS_ORIGINS not set in production, defaulting to no allowed origins",
 			)
@@ -35,7 +34,7 @@ function getCorsOrigins(): string | string[] {
 	}
 
 	if (originsEnv.trim() === "*") {
-		if (process.env.NODE_ENV === "production") {
+		if (process.env.APP_ENV === "production") {
 			logger.warn("CORS_ORIGINS=* in production is not recommended")
 		}
 		return "*"
@@ -72,19 +71,6 @@ app.get("/", (c) => {
 		name: constants.app.name,
 		version: constants.app.version,
 		status: "ok",
-	})
-})
-
-app.get("/health", async (c) => {
-	const dbHealth = await checkDbHealth()
-	const status = dbHealth.connected ? "ok" : "degraded"
-
-	return c.json({
-		status,
-		timestamp: new Date().toISOString(),
-		services: {
-			database: dbHealth,
-		},
 	})
 })
 
