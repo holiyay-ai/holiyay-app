@@ -27,12 +27,20 @@ import type {
 
 // Generic API response type
 type ApiResponse<T> =
-	| { data: T; error: null }
-	| { data: null; error: { message: string; code?: string; cause?: unknown } }
+	| { data: T; error: null; headers: Record<string, string> }
+	| {
+			data: null
+			error: { message: string; code?: string; cause?: unknown }
+			headers?: Record<string, string>
+	  }
 
 // Helper to create authorization header
 function authHeader(token: string): HeadersInit {
 	return { Authorization: `Bearer ${token}` }
+}
+
+function getHeaders(response: Response): Record<string, string> {
+	return Object.fromEntries(response.headers.entries())
 }
 
 async function responseJsonSafe<T>(
@@ -49,6 +57,7 @@ async function responseJsonSafe<T>(
 				code: "INVALID_JSON",
 				cause: err,
 			},
+			headers: getHeaders(response),
 		}
 	}
 }
@@ -82,10 +91,11 @@ async function fetchApi<T>(
 					message: `API request failed with status ${response.status}`,
 					code: "API_ERROR",
 				},
+				headers: getHeaders(response),
 			}
 		}
 
-		return { data: data as T, error: null }
+		return { data: data as T, error: null, headers: getHeaders(response) }
 	} catch (err) {
 		return {
 			data: null,
@@ -164,18 +174,18 @@ export const auth = {
 // Calendars API
 // ============================================
 
-interface CreateCalendarRequest {
+export interface CreateCalendarRequest {
 	name: string
-	destination?: string
+	destination?: string | undefined
 	startDate: string
 	endDate: string
 }
 
-interface UpdateCalendarRequest {
-	name?: string
-	destination?: string
-	startDate?: string
-	endDate?: string
+export interface UpdateCalendarRequest {
+	name?: string | undefined
+	destination?: string | undefined
+	startDate?: string | undefined
+	endDate?: string | undefined
 }
 
 export const calendars = {
@@ -238,7 +248,7 @@ export const calendars = {
 // Items API
 // ============================================
 
-interface CreateItemRequest {
+export interface CreateItemRequest {
 	date: string
 	title: string
 	description?: string
@@ -250,7 +260,7 @@ interface CreateItemRequest {
 	orderIndex?: number
 }
 
-interface UpdateItemRequest {
+export interface UpdateItemRequest {
 	date?: string
 	title?: string
 	description?: string | null
@@ -262,7 +272,7 @@ interface UpdateItemRequest {
 	orderIndex?: number
 }
 
-interface ReorderItemsRequest {
+export interface ReorderItemsRequest {
 	items: Array<{ id: string; orderIndex: number }>
 }
 
@@ -332,7 +342,7 @@ export const items = {
 // Shares API
 // ============================================
 
-interface ShareCalendarRequest {
+export interface ShareCalendarRequest {
 	email: string
 	permission: "view" | "edit"
 }
@@ -418,13 +428,13 @@ export const shares = {
 // AI API
 // ============================================
 
-interface GenerateChecklistRequest {
+export interface GenerateChecklistRequest {
 	destination: string
 	startDate: string
 	endDate: string
 }
 
-interface GetRecommendationsRequest {
+export interface GetRecommendationsRequest {
 	destination: string
 	date?: string
 	preferences?: string[]

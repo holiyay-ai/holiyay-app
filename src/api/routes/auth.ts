@@ -20,13 +20,6 @@ const router = new Hono()
 
 // Cookie configuration
 const COOKIE_NAME = "holiyay_session"
-const COOKIE_OPTIONS = {
-	httpOnly: true,
-	secure: process.env.NODE_ENV === "production",
-	sameSite: "lax" as const,
-	path: "/",
-	maxAge: 60 * 60 * 24 * 7, // 7 days
-}
 
 router.post("/register", async (c) => {
 	const body = await c.req.json()
@@ -55,13 +48,16 @@ router.post("/register", async (c) => {
 		}
 
 		// Set HTTP-only cookie
-		setCookie(c, COOKIE_NAME, authResult.tokens.accessToken, COOKIE_OPTIONS)
+		setCookie(c, COOKIE_NAME, authResult.tokens.accessToken, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "lax",
+			maxAge: authResult.tokens.expiresIn,
+		})
 
 		return c.json(
 			{
 				user: authResult.user,
-				expiresIn: authResult.tokens.expiresIn,
-				accessToken: authResult.tokens.accessToken,
 			},
 			201,
 		)
@@ -89,12 +85,15 @@ router.post("/login", async (c) => {
 		}
 
 		// Set HTTP-only cookie
-		setCookie(c, COOKIE_NAME, authResult.tokens.accessToken, COOKIE_OPTIONS)
+		setCookie(c, COOKIE_NAME, authResult.tokens.accessToken, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "strict",
+			maxAge: authResult.tokens.expiresIn,
+		})
 
 		return c.json({
 			user: authResult.user,
-			expiresIn: authResult.tokens.expiresIn,
-			accessToken: authResult.tokens.accessToken,
 		})
 	} catch (error) {
 		return handleError(c, error)
@@ -157,12 +156,15 @@ router.post("/oauth/callback", async (c) => {
 		}
 
 		// Set HTTP-only cookie
-		setCookie(c, COOKIE_NAME, authResult.tokens.accessToken, COOKIE_OPTIONS)
+		setCookie(c, COOKIE_NAME, authResult.tokens.accessToken, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "strict",
+			maxAge: authResult.tokens.expiresIn,
+		})
 
 		return c.json({
 			user: authResult.user,
-			expiresIn: authResult.tokens.expiresIn,
-			accessToken: authResult.tokens.accessToken,
 		})
 	} catch (err) {
 		return handleError(c, err)

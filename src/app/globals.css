@@ -114,6 +114,6 @@
 		@apply border-border outline-ring/50;
 	}
 	body {
-		@apply bg-background text-foreground m-0 p-0;
+		@apply bg-background text-foreground m-0 p-0 flex flex-col min-h-screen;
 	}
 }
