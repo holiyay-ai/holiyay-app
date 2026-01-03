@@ -8,7 +8,6 @@ import { useAuth } from "@/lib/auth-context"
 
 interface CalendarContextValue {
 	calendars: CalendarWithRole[]
-	days: unknown[]
 	calendar: CalendarWithItems | undefined
 	modals: {
 		createCalendarModalOpen: boolean
@@ -28,6 +27,7 @@ interface CalendarContextValue {
 		calendars: boolean
 		calendar: boolean
 	}
+	refreshCalendar: () => Promise<void>
 }
 
 const CalendarContext = createContext<CalendarContextValue | undefined>(
@@ -70,7 +70,6 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
 	const [deleteItemModalOpen, setDeleteItemModalOpen] = useState(false)
 
 	const value: CalendarContextValue = {
-		days: [],
 		calendars: calendarsQuery.data ?? [],
 		calendar: calendarQuery.data ?? undefined,
 		modals: {
@@ -90,6 +89,9 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
 		loading: {
 			calendars: calendarsQuery.isLoading,
 			calendar: calendarQuery.isLoading,
+		},
+		refreshCalendar: async () => {
+			await calendarQuery.refetch()
 		},
 	}
 	return (

@@ -8,6 +8,5 @@ export async function getBaseUrl(): Promise<string> {
 		headersData.get("x-forwarded-proto") ??
 		(host?.startsWith("localhost") ? "http" : "https")
 	const apiBase = `${protocol}://${host}/api`
-	console.log("Base URL:", apiBase)
 	return apiBase
 }

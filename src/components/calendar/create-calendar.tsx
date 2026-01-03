@@ -39,12 +39,14 @@ export function CreateCalendarModal() {
 			open={createCalendarModalOpen}
 			onOpenChange={setCreateCalendarModalOpen}
 		>
-			<CreateCalendarForm
-				onClose={() => setCreateCalendarModalOpen(false)}
-				onCreated={async (calendarId) => {
-					updateSearchParams("calendar_id", calendarId)
-				}}
-			/>
+			{createCalendarModalOpen && (
+				<CreateCalendarForm
+					onClose={() => setCreateCalendarModalOpen(false)}
+					onCreated={async (calendarId) => {
+						updateSearchParams("calendar_id", calendarId)
+					}}
+				/>
+			)}
 		</Dialog>
 	)
 }
@@ -105,7 +107,7 @@ function CreateCalendarForm({ onClose, onCreated }: CreateCalendarFormProps) {
 						/>
 						<FieldError>{form.formState.errors.name?.message}</FieldError>
 					</Field>
-					<section className="flex flex-row gap-2 items-center">
+					<section className="flex flex-row gap-2 items-start">
 						<Field data-invalid={!!form.formState.errors.startDate}>
 							<FieldLabel htmlFor="startDate">Start date</FieldLabel>
 							<FieldDescription>The first day of your trip</FieldDescription>

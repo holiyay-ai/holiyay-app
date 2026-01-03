@@ -158,6 +158,18 @@ export const auth = {
 		})
 	},
 
+	async userById(
+		id: string,
+		token: string,
+	): Promise<ApiResponse<{ user: Partial<AuthUser> }>> {
+		return fetchApi<{ user: AuthUser }>(
+			`${await getBaseUrl()}/auth/users/${id}`,
+			{
+				headers: authHeader(token),
+			},
+		)
+	},
+
 	async oauthCallback(
 		accessToken: string,
 		refreshToken?: string,
@@ -251,13 +263,13 @@ export const calendars = {
 export interface CreateItemRequest {
 	date: string
 	title: string
-	description?: string
-	startTime?: string
-	endTime?: string
-	location?: string
-	category?: "activity" | "transport" | "food" | "lodging" | "other"
-	affiliateLink?: string
-	orderIndex?: number
+	description?: string | undefined
+	startTime?: string | undefined
+	endTime?: string | undefined
+	location?: string | undefined
+	category?: "activity" | "transport" | "food" | "lodging" | "other" | undefined
+	affiliateLink?: string | null | undefined
+	orderIndex?: number | undefined
 }
 
 export interface UpdateItemRequest {

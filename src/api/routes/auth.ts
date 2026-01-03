@@ -194,4 +194,21 @@ router.get("/me", authMiddleware, async (c) => {
 	}
 })
 
+router.get("/users/:id", authMiddleware, async (c) => {
+	const id = c.req.param("id")
+	try {
+		const user = await authService.getUserById(id)
+		return c.json({
+			user: {
+				id: user.id,
+				name: user.name,
+				email: user.email,
+				avatarUrl: user.avatarUrl,
+			},
+		})
+	} catch (error) {
+		return handleError(c, error)
+	}
+})
+
 export { router as authRoutes }
