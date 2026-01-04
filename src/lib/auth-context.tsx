@@ -21,7 +21,7 @@ import {
 import { getSessionCookie } from "@/actions/get-session-cookie"
 import type { AuthUser } from "@/api/types"
 import api from "./api"
-import { checkIfExpired } from "./jwt"
+import { isJwtExpired } from "./jwt"
 
 interface AuthContextValue {
 	user: AuthUser | null
@@ -47,7 +47,7 @@ function useIntervalTokenState(initialValue: string | null) {
 			}
 
 			intervalRef.current = setInterval(() => {
-				if (checkIfExpired(value)) {
+				if (isJwtExpired(value)) {
 					_setValue(null)
 					if (intervalRef.current) {
 						clearInterval(intervalRef.current)

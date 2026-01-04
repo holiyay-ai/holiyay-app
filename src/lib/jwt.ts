@@ -1,18 +1,21 @@
 import * as jwt from "jsonwebtoken"
 
-export function checkIfExpired(token: string | null | undefined): boolean {
+export function isJwtExpired(
+	token?: string | null,
+	treatMissingExpAsExpired = true,
+): boolean {
+	if (!token) return true
 	try {
-		if (!token) {
-			return true
-		}
-		const decoded = jwt.decode(token) as { exp: number } | null
-		if (!decoded || !decoded.exp) {
-			return true
-		}
+		const decoded = jwt.decode(token) as jwt.JwtPayload | null
+		if (!decoded) return true
+		const rawExp = decoded.exp
+		if (rawExp == null) return treatMissingExpAsExpired
+		const exp = Number(rawExp)
+		if (!Number.isFinite(exp)) return true
 		const currentTime = Math.floor(Date.now() / 1000)
-		return decoded.exp < currentTime
-	} catch (error) {
-		console.error("Error decoding JWT:", error)
+		return currentTime >= exp
+	} catch (err) {
+		console.error("Error decoding JWT:", err)
 		return true
 	}
 }
