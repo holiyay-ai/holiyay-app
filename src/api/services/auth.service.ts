@@ -19,6 +19,7 @@ import {
 	ValidationError,
 } from "../lib/errors"
 import type { AuthResult, AuthUser } from "../types"
+import { AppError } from "../types"
 
 export interface RegisterInput {
 	email: string
@@ -125,6 +126,17 @@ export const authService = {
 				expiresIn: input.expiresIn ?? 3600,
 			},
 		}
+	},
+
+	async refreshToken(refreshToken: string) {
+		const adapter = getAuthAdapter()
+		if (!adapter.refreshToken) {
+			throw new AppError(
+				"Refresh token is not supported by the configured auth adapter",
+				"INTERNAL_ERROR",
+			)
+		}
+		return await adapter.refreshToken(refreshToken)
 	},
 }
 

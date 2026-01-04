@@ -2,6 +2,8 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback } from "react"
+import useSWR from "swr"
+import { useAuth } from "./auth-context"
 
 export function useMutableSearchParams() {
 	const router = useRouter()
@@ -29,4 +31,15 @@ export function useMutableSearchParams() {
 	)
 
 	return { updateSearchParams }
+}
+
+type UseApiParams<T> = [
+	Parameters<typeof useSWR<T>>[0],
+	() => Promise<T>,
+	Parameters<typeof useSWR<T>>[2]?,
+]
+export function useApi<T>(...args: UseApiParams<T>) {
+	const [key, fetcher, config] = args
+	const { isAuthenticated } = useAuth()
+	return useSWR(() => (isAuthenticated ? key : null), fetcher, { ...config })
 }

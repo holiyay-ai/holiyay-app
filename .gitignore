@@ -69,6 +69,7 @@ desktop.ini
 # Database
 *.db
 pgdata/
+supabase/.*
 
 # Drizzle
 migrations/meta/_journal.json.bak

@@ -74,7 +74,7 @@ export interface ItemResponse {
 	endTime: string | null
 	location: string | null
 	category: "activity" | "transport" | "food" | "lodging" | "other"
-	affiliateLink: string | null
+	checklistId: string | null
 	orderIndex: number
 	createdAt: Date
 	updatedAt: Date

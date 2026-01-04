@@ -46,6 +46,7 @@
 		"react-resizable-panels": "^3.0.6",
 		"sonic-boom": "4.2.0",
 		"sonner": "^2.0.7",
+		"swr": "2.3.8",
 		"tailwind-merge": "^3.4.0",
 		"tailwindcss": "4.1.17",
 		"thread-stream": "4.0.0",

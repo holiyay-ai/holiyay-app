@@ -35,7 +35,7 @@ export interface CalendarItemVM {
 
 	location: Item["location"] | null
 	category: Item["category"]
-	affiliateLink: Item["affiliateLink"] | null
+	checklistId: Item["checklistId"] | null
 	orderIndex: Item["orderIndex"]
 	createdAt: Item["createdAt"]
 	updatedAt: Item["updatedAt"]

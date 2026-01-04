@@ -62,9 +62,24 @@ export const createItemSchema = z.object({
 		.optional(),
 	location: z.string().max(255).optional(),
 	category: categorySchema.optional().default("other"),
-	affiliateLink: z.string().url().optional().nullable(),
+	checklistId: z.uuid().optional().nullable(),
 	orderIndex: z.number().int().optional(),
 })
+
+export const createItemSchemaWithinRange = (
+	startDate: string,
+	endDate: string,
+) =>
+	createItemSchema.superRefine((val, ctx) => {
+		if (val.date < startDate || val.date > endDate) {
+			ctx.addIssue({
+				code: "invalid_value",
+				path: ["date"],
+				message: `Date must be between ${startDate} and ${endDate}`,
+				values: [val.date],
+			})
+		}
+	})
 
 export const updateItemSchema = z.object({
 	date: z.string().regex(dateRegex).optional(),
@@ -74,7 +89,7 @@ export const updateItemSchema = z.object({
 	endTime: z.string().regex(timeRegex).optional().nullable(),
 	location: z.string().max(255).optional().nullable(),
 	category: categorySchema.optional(),
-	affiliateLink: z.url().optional().nullable(),
+	checklistId: z.uuid().optional().nullable(),
 	orderIndex: z.number().int().optional(),
 })
 
@@ -101,6 +116,7 @@ export const updateShareSchema = z.object({
 export const checklistItemSchema = z.object({
 	text: z.string().min(1),
 	checked: z.boolean().default(false),
+	affiliateLink: z.url().optional().nullable(),
 })
 
 export const createChecklistSchema = z.object({

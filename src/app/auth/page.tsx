@@ -4,7 +4,6 @@ import { redirect } from "next/navigation"
 import { ViewTransition } from "react"
 import { AuthForm } from "@/components/auth-form"
 import { Header } from "@/components/header"
-import { isJwtExpired } from "@/lib/jwt"
 
 export default async function AuthPage({
 	searchParams,
@@ -21,7 +20,7 @@ export default async function AuthPage({
 
 	const session = cookieStorage.get("holiyay_session")?.value
 
-	if (!isJwtExpired(session)) {
+	if (session) {
 		return redirect("/")
 	}
 

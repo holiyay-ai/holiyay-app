@@ -1,12 +1,18 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useTransition } from "react"
-import { useForm } from "react-hook-form"
+import { SparklesIcon } from "lucide-react"
+import { useCallback, useTransition } from "react"
+import { useForm, useFormContext } from "react-hook-form"
 import { toast } from "sonner"
+import type z from "zod"
 import { postCalendarItemAction } from "@/actions/post-calendar-item"
-import { createItemSchema } from "@/api/lib/schemas"
-import { useAuth } from "@/lib/auth-context"
+import {
+	type createItemSchema,
+	createItemSchemaWithinRange,
+} from "@/api/lib/schemas"
+import type { CalendarWithItems } from "@/api/types"
+import { cn } from "@/lib/utils"
 import { Button } from "../ui/button"
 import {
 	Dialog,
@@ -25,9 +31,12 @@ import {
 	FieldLabel,
 } from "../ui/field"
 import { Input } from "../ui/input"
+import { Separator } from "../ui/separator"
 import { Spinner } from "../ui/spinner"
 import { Textarea } from "../ui/textarea"
 import { useCalendar } from "./calendar-context"
+
+type CreateItemFormType = z.infer<typeof createItemSchema>
 
 export function CreateItemModal() {
 	const {
@@ -44,7 +53,7 @@ export function CreateItemModal() {
 					onCreated={async () => {
 						await refreshCalendar()
 					}}
-					calendarId={calendar.id}
+					calendar={calendar}
 				/>
 			)}
 		</Dialog>
@@ -54,14 +63,9 @@ export function CreateItemModal() {
 type CreateItemFormProps = {
 	onClose: () => void
 	onCreated: (itemId: string) => Promise<void>
-	calendarId: string
+	calendar: CalendarWithItems
 }
-function CreateItemForm({
-	onClose,
-	onCreated,
-	calendarId,
-}: CreateItemFormProps) {
-	const { sessionToken } = useAuth()
+function CreateItemForm({ onClose, onCreated, calendar }: CreateItemFormProps) {
 	const form = useForm({
 		defaultValues: {
 			date: "",
@@ -71,19 +75,14 @@ function CreateItemForm({
 			description: "",
 		},
 		mode: "onBlur",
-		resolver: zodResolver(createItemSchema),
+		resolver: zodResolver(
+			createItemSchemaWithinRange(calendar.startDate, calendar.endDate),
+		),
 	})
 	const [isPending, startTransition] = useTransition()
 	const onSubmit = form.handleSubmit(async (data) => {
-		if (!sessionToken) {
-			throw new Error("User is not authenticated")
-		}
 		startTransition(async () => {
-			const result = await postCalendarItemAction(
-				data,
-				calendarId,
-				sessionToken,
-			)
+			const result = await postCalendarItemAction(data, calendar.id)
 			if (result.data) {
 				await onCreated(result.data.id)
 				onClose()
@@ -173,6 +172,10 @@ function CreateItemForm({
 						</FieldError>
 					</Field>
 				</FieldGroup>
+				<Separator />
+				<WeatherReport />
+				<Separator />
+				<ChecklistHandler />
 				<DialogFooter>
 					<Button
 						type="button"
@@ -189,5 +192,35 @@ function CreateItemForm({
 				</DialogFooter>
 			</form>
 		</DialogContent>
+	)
+}
+
+function ChecklistHandler() {
+	const _form = useFormContext<CreateItemFormType>()
+	const [isPending, startTransition] = useTransition()
+	const handleGenerateItems = useCallback(() => {
+		startTransition(async () => {})
+	}, [])
+
+	return (
+		<section inert={isPending} className={cn(isPending && "opacity-50")}>
+			<div className="flex flex-row justify-between gap-2">
+				<h4>Checklist</h4>
+				<Button variant="outline" onClick={handleGenerateItems}>
+					<SparklesIcon />
+				</Button>
+			</div>
+			<FieldGroup></FieldGroup>
+		</section>
+	)
+}
+
+function WeatherReport() {
+	return (
+		<section>
+			<div className="flex flex-row justify-between gap-2">
+				<h4>Weather report</h4>
+			</div>
+		</section>
 	)
 }

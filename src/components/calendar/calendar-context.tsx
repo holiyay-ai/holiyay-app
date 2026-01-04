@@ -1,10 +1,11 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
 import { useSearchParams } from "next/navigation"
 import { createContext, type ReactNode, useContext, useState } from "react"
+import { getCalendarAction } from "@/actions/get-calendar"
+import { getCalendarsAction } from "@/actions/get-calendars"
 import api, { type CalendarWithItems, type CalendarWithRole } from "@/lib/api"
-import { useAuth } from "@/lib/auth-context"
+import { useApi } from "@/lib/hooks"
 
 interface CalendarContextValue {
 	calendars: CalendarWithRole[]
@@ -35,30 +36,16 @@ const CalendarContext = createContext<CalendarContextValue | undefined>(
 )
 
 export function CalendarProvider({ children }: { children: ReactNode }) {
-	const { sessionToken } = useAuth()
 	const searchParams = useSearchParams()
 	const calendarId = searchParams.get("calendar_id") || undefined
-	const calendarsQuery = useQuery({
-		queryKey: ["calendars"],
-		queryFn: async () => {
-			if (!sessionToken) {
-				return []
-			}
-			return (await api.calendars.list(sessionToken)).data
-		},
-		enabled: !!sessionToken,
-		staleTime: 1000 * 60 * 5,
+	const calendarsQuery = useApi("calendars", async () => {
+		return (await getCalendarsAction()).data
 	})
-	const calendarQuery = useQuery({
-		queryKey: ["calendar", calendarId],
-		queryFn: async () => {
-			if (!sessionToken || !calendarId || typeof calendarId !== "string") {
-				return null
-			}
-			return (await api.calendars.get(sessionToken, calendarId)).data
-		},
-		enabled: !!calendarId && !!sessionToken,
-		staleTime: 1000 * 60 * 5,
+	const calendarQuery = useApi(["calendar", calendarId], async () => {
+		if (!calendarId || typeof calendarId !== "string") {
+			return null
+		}
+		return (await getCalendarAction(calendarId)).data
 	})
 
 	// Modal state
@@ -91,7 +78,7 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
 			calendar: calendarQuery.isLoading,
 		},
 		refreshCalendar: async () => {
-			await calendarQuery.refetch()
+			await calendarQuery.mutate()
 		},
 	}
 	return (

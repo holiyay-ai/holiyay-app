@@ -145,27 +145,24 @@ export const auth = {
 		})
 	},
 
-	async logout(token: string): Promise<ApiResponse<{ message: string }>> {
+	async logout(): Promise<ApiResponse<{ message: string }>> {
 		return fetchApi<{ message: string }>(`${await getBaseUrl()}/auth/logout`, {
 			method: "POST",
-			headers: authHeader(token),
 		})
 	},
 
-	async me(token: string): Promise<ApiResponse<{ user: AuthUser }>> {
-		return fetchApi<{ user: AuthUser }>(`${await getBaseUrl()}/auth/me`, {
-			headers: authHeader(token),
-		})
+	async me(): Promise<ApiResponse<{ user: AuthUser }>> {
+		return fetchApi<{ user: AuthUser }>(`${await getBaseUrl()}/auth/me`)
 	},
 
 	async userById(
 		id: string,
-		token: string,
+		token?: string,
 	): Promise<ApiResponse<{ user: Partial<AuthUser> }>> {
 		return fetchApi<{ user: AuthUser }>(
 			`${await getBaseUrl()}/auth/users/${id}`,
 			{
-				headers: authHeader(token),
+				headers: token ? authHeader(token) : {},
 			},
 		)
 	},
@@ -201,56 +198,56 @@ export interface UpdateCalendarRequest {
 }
 
 export const calendars = {
-	async list(token: string): Promise<ApiResponse<CalendarWithRole[]>> {
+	async list(token?: string): Promise<ApiResponse<CalendarWithRole[]>> {
 		return fetchApi<CalendarWithRole[]>(`${await getBaseUrl()}/calendars`, {
-			headers: authHeader(token),
+			headers: token ? authHeader(token) : {},
 		})
 	},
 
 	async get(
-		token: string,
+		token: string | undefined,
 		id: string,
 	): Promise<ApiResponse<CalendarWithItems>> {
 		return fetchApi<CalendarWithItems>(
 			`${await getBaseUrl()}/calendars/${id}`,
 			{
-				headers: authHeader(token),
+				headers: token ? authHeader(token) : {},
 			},
 		)
 	},
 
 	async create(
-		token: string,
+		token: string | undefined,
 		data: CreateCalendarRequest,
 	): Promise<ApiResponse<CalendarWithRole>> {
 		return fetchApi<CalendarWithRole>(`${await getBaseUrl()}/calendars`, {
 			method: "POST",
-			headers: authHeader(token),
+			headers: token ? authHeader(token) : {},
 			body: JSON.stringify(data),
 		})
 	},
 
 	async update(
-		token: string,
+		token: string | undefined,
 		id: string,
 		data: UpdateCalendarRequest,
 	): Promise<ApiResponse<CalendarWithRole>> {
 		return fetchApi<CalendarWithRole>(`${await getBaseUrl()}/calendars/${id}`, {
 			method: "PATCH",
-			headers: authHeader(token),
+			headers: token ? authHeader(token) : {},
 			body: JSON.stringify(data),
 		})
 	},
 
 	async delete(
-		token: string,
+		token: string | undefined,
 		id: string,
 	): Promise<ApiResponse<{ success: boolean }>> {
 		return fetchApi<{ success: boolean }>(
 			`${await getBaseUrl()}/calendars/${id}`,
 			{
 				method: "DELETE",
-				headers: authHeader(token),
+				headers: token ? authHeader(token) : {},
 			},
 		)
 	},
@@ -268,7 +265,7 @@ export interface CreateItemRequest {
 	endTime?: string | undefined
 	location?: string | undefined
 	category?: "activity" | "transport" | "food" | "lodging" | "other" | undefined
-	affiliateLink?: string | null | undefined
+	checklistId?: string | null | undefined
 	orderIndex?: number | undefined
 }
 
@@ -280,7 +277,7 @@ export interface UpdateItemRequest {
 	endTime?: string | null
 	location?: string | null
 	category?: "activity" | "transport" | "food" | "lodging" | "other"
-	affiliateLink?: string | null
+	checklistId?: string | null
 	orderIndex?: number
 }
 
@@ -290,7 +287,7 @@ export interface ReorderItemsRequest {
 
 export const items = {
 	async create(
-		token: string,
+		token: string | undefined,
 		calendarId: string,
 		data: CreateItemRequest,
 	): Promise<ApiResponse<ItemResponse>> {
@@ -298,14 +295,14 @@ export const items = {
 			`${await getBaseUrl()}/calendars/${calendarId}/items`,
 			{
 				method: "POST",
-				headers: authHeader(token),
+				headers: token ? authHeader(token) : {},
 				body: JSON.stringify(data),
 			},
 		)
 	},
 
 	async update(
-		token: string,
+		token: string | undefined,
 		calendarId: string,
 		itemId: string,
 		data: UpdateItemRequest,
@@ -314,14 +311,14 @@ export const items = {
 			`${await getBaseUrl()}/calendars/${calendarId}/items/${itemId}`,
 			{
 				method: "PATCH",
-				headers: authHeader(token),
+				headers: token ? authHeader(token) : {},
 				body: JSON.stringify(data),
 			},
 		)
 	},
 
 	async delete(
-		token: string,
+		token: string | undefined,
 		calendarId: string,
 		itemId: string,
 	): Promise<ApiResponse<{ success: boolean }>> {
@@ -329,7 +326,7 @@ export const items = {
 			`${await getBaseUrl()}/calendars/${calendarId}/items/${itemId}`,
 			{
 				method: "DELETE",
-				headers: authHeader(token),
+				headers: token ? authHeader(token) : {},
 			},
 		)
 	},

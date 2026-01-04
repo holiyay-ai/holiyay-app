@@ -184,7 +184,7 @@ export const shareService = {
 				endTime: item.endTime,
 				location: item.location,
 				category: item.category,
-				affiliateLink: item.affiliateLink,
+				checklistId: item.checklistId,
 				orderIndex: item.orderIndex,
 				createdAt: item.createdAt,
 				updatedAt: item.updatedAt,

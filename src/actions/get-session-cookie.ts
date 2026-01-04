@@ -1,7 +1,7 @@
 "use server"
-import { cookies } from "next/headers"
 
 export async function getSessionCookie(): Promise<string> {
-	const cookieStore = await cookies()
-	return cookieStore.get("holiyay_session")?.value || ""
+	throw new Error(
+		"getSessionCookie is disabled for security reasons. Use getCurrentUser() instead which does not expose tokens to client code.",
+	)
 }

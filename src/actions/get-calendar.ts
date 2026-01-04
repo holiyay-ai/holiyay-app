@@ -3,11 +3,8 @@
 import { cookies } from "next/headers"
 import api from "@/lib/api"
 
-export async function deleteCalendarItemAction(
-	calendarId: string,
-	itemId: string,
-) {
+export async function getCalendarAction(calendarId: string) {
 	const cookieStore = await cookies()
 	const token = cookieStore.get("holiyay_session")?.value || ""
-	return await api.items.delete(token, calendarId, itemId)
+	return await api.calendars.get(token, calendarId)
 }

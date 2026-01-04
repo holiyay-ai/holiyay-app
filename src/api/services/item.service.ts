@@ -7,7 +7,7 @@
  */
 
 import type { Item, NewItem } from "../db/schema"
-import { ForbiddenError, NotFoundError } from "../lib/errors"
+import { ForbiddenError, NotFoundError, ValidationError } from "../lib/errors"
 import { calendarRepository } from "../repositories/calendar.repository"
 import { itemRepository } from "../repositories/item.repository"
 
@@ -19,7 +19,7 @@ export interface CreateItemInput {
 	endTime?: string | undefined
 	location?: string | undefined
 	category?: "activity" | "transport" | "food" | "lodging" | "other" | undefined
-	affiliateLink?: string | null | undefined
+	checklistId?: string | null | undefined
 	orderIndex?: number | undefined
 }
 
@@ -31,7 +31,7 @@ export interface UpdateItemInput {
 	endTime?: string | null | undefined
 	location?: string | null | undefined
 	category?: "activity" | "transport" | "food" | "lodging" | "other" | undefined
-	affiliateLink?: string | null | undefined
+	checklistId?: string | null | undefined
 	orderIndex?: number | undefined
 }
 
@@ -98,6 +98,15 @@ export const itemService = {
 	): Promise<Item> {
 		await assertCalendarAccess(calendarId, userId, true)
 
+		const calendar = await calendarRepository.findById(calendarId)
+		if (!calendar) throw new NotFoundError("Calendar")
+
+		if (input.date < calendar.startDate || input.date > calendar.endDate) {
+			throw new ValidationError(
+				`Date must be between ${calendar.startDate} and ${calendar.endDate}`,
+			)
+		}
+
 		const orderIndex =
 			input.orderIndex ??
 			(await itemRepository.getNextOrderIndex(calendarId, input.date))
@@ -111,7 +120,7 @@ export const itemService = {
 			endTime: input.endTime || null,
 			location: input.location || null,
 			category: input.category ?? "other",
-			affiliateLink: input.affiliateLink || null,
+			checklistId: input.checklistId || null,
 			orderIndex,
 		}
 
@@ -135,8 +144,8 @@ export const itemService = {
 		if (input.endTime !== undefined) updateData.endTime = input.endTime
 		if (input.location !== undefined) updateData.location = input.location
 		if (input.category !== undefined) updateData.category = input.category
-		if (input.affiliateLink !== undefined)
-			updateData.affiliateLink = input.affiliateLink
+		if (input.checklistId !== undefined)
+			updateData.checklistId = input.checklistId
 		if (input.orderIndex !== undefined) updateData.orderIndex = input.orderIndex
 
 		const updated = await itemRepository.update(itemId, updateData)
@@ -213,7 +222,7 @@ export const itemService = {
 			endTime: item.endTime,
 			location: item.location,
 			category: item.category,
-			affiliateLink: item.affiliateLink,
+			checklistId: item.checklistId,
 			orderIndex,
 		}
 

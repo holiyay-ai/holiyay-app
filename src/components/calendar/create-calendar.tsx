@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { postCalendarAction } from "@/actions/post-calendar"
 import { createCalendarSchema } from "@/api/lib/schemas"
-import { useAuth } from "@/lib/auth-context"
 import { useMutableSearchParams } from "@/lib/hooks"
 import { Button } from "../ui/button"
 import {
@@ -56,7 +55,6 @@ type CreateCalendarFormProps = {
 	onCreated: (calendarId: string) => Promise<void>
 }
 function CreateCalendarForm({ onClose, onCreated }: CreateCalendarFormProps) {
-	const { sessionToken } = useAuth()
 	const form = useForm({
 		defaultValues: {
 			name: "",
@@ -69,11 +67,8 @@ function CreateCalendarForm({ onClose, onCreated }: CreateCalendarFormProps) {
 	})
 	const [isPending, startTransition] = useTransition()
 	const onSubmit = form.handleSubmit(async (data) => {
-		if (!sessionToken) {
-			throw new Error("User is not authenticated")
-		}
 		startTransition(async () => {
-			const result = await postCalendarAction(data, sessionToken)
+			const result = await postCalendarAction(data)
 			if (result.data) {
 				await onCreated(result.data.id)
 				onClose()

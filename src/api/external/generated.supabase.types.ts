@@ -122,7 +122,7 @@ export type Database = {
 			}
 			items: {
 				Row: {
-					affiliate_link: string | null
+					checklist_id: string | null
 					calendar_id: string
 					category: string
 					created_at: string
@@ -137,7 +137,7 @@ export type Database = {
 					updated_at: string
 				}
 				Insert: {
-					affiliate_link?: string | null
+					checklist_id?: string | null
 					calendar_id: string
 					category?: string
 					created_at?: string
@@ -152,7 +152,7 @@ export type Database = {
 					updated_at?: string
 				}
 				Update: {
-					affiliate_link?: string | null
+					checklist_id?: string | null
 					calendar_id?: string
 					category?: string
 					created_at?: string
@@ -172,6 +172,13 @@ export type Database = {
 						columns: ["calendar_id"]
 						isOneToOne: false
 						referencedRelation: "calendars"
+						referencedColumns: ["id"]
+					},
+					{
+						foreignKeyName: "items_checklist_id_fkey"
+						columns: ["checklist_id"]
+						isOneToOne: false
+						referencedRelation: "checklists"
 						referencedColumns: ["id"]
 					},
 				]

@@ -18,7 +18,7 @@ function mapRow(row: DbItemRow): Item {
 		endTime: row.end_time ?? null,
 		location: row.location ?? null,
 		category: row.category as Item["category"],
-		affiliateLink: row.affiliate_link ?? null,
+		checklistId: row.checklist_id ?? null,
 		orderIndex: Number(row.order_index ?? 0),
 		createdAt: new Date(row.created_at),
 		updatedAt: new Date(row.updated_at),
@@ -85,7 +85,7 @@ export const itemRepository = {
 			end_time: data.endTime ?? null,
 			location: data.location ?? null,
 			category: data.category,
-			affiliate_link: data.affiliateLink ?? null,
+			checklist_id: data.checklistId ?? null,
 			order_index: data.orderIndex ?? 0,
 		}
 
@@ -113,9 +113,8 @@ export const itemRepository = {
 		if (data.endTime !== undefined) updateData.end_time = data.endTime
 		if (data.location !== undefined) updateData.location = data.location
 		if (data.category !== undefined) updateData.category = data.category
-		if (data.affiliateLink !== undefined)
-			updateData.affiliate_link = data.affiliateLink
-		if (data.orderIndex !== undefined) updateData.order_index = data.orderIndex
+		if (data.checklistId !== undefined)
+			updateData.checklist_id = data.checklistId
 		updateData.updated_at = new Date().toISOString()
 		const { data: row, error } = await supabase
 			.from(items)

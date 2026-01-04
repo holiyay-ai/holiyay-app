@@ -94,7 +94,7 @@ export type Item = {
 	endTime: string | null // HH:MM:SS
 	location: string | null
 	category: Category
-	affiliateLink: string | null
+	checklistId: string | null
 	orderIndex: number
 	createdAt: Date
 	updatedAt: Date
@@ -104,12 +104,16 @@ export type NewItem = Omit<Item, "id" | "createdAt" | "updatedAt"> &
 	Partial<
 		Pick<
 			Item,
-			"description" | "startTime" | "endTime" | "location" | "affiliateLink"
+			"description" | "startTime" | "endTime" | "location" | "checklistId"
 		>
 	>
 
 // Checklist
-export type ChecklistItem = { text: string; checked: boolean }
+export type ChecklistItem = {
+	text: string
+	checked: boolean
+	affiliateLink?: string | null
+}
 
 export type Checklist = {
 	id: string

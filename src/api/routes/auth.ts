@@ -20,6 +20,7 @@ const router = new Hono()
 
 // Cookie configuration
 const COOKIE_NAME = "holiyay_session"
+const REFRESH_COOKIE = "holiyay_refresh"
 
 router.post("/register", async (c) => {
 	const body = await c.req.json()
@@ -84,13 +85,22 @@ router.post("/login", async (c) => {
 			return c.json({ error: "No tokens returned from login" }, 500)
 		}
 
-		// Set HTTP-only cookie
+		// Set HTTP-only cookies (access + refresh)
 		setCookie(c, COOKIE_NAME, authResult.tokens.accessToken, {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === "production",
 			sameSite: "strict",
 			maxAge: authResult.tokens.expiresIn,
 		})
+
+		if (authResult.tokens.refreshToken) {
+			setCookie(c, REFRESH_COOKIE, authResult.tokens.refreshToken, {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === "production",
+				sameSite: "strict",
+				maxAge: 60 * 60 * 24 * 30, // 30 days
+			})
+		}
 
 		return c.json({
 			user: authResult.user,
@@ -155,13 +165,22 @@ router.post("/oauth/callback", async (c) => {
 			return c.json({ error: "No tokens returned from OAuth exchange" }, 500)
 		}
 
-		// Set HTTP-only cookie
+		// Set HTTP-only cookies (access + refresh)
 		setCookie(c, COOKIE_NAME, authResult.tokens.accessToken, {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === "production",
 			sameSite: "strict",
 			maxAge: authResult.tokens.expiresIn,
 		})
+
+		if (authResult.tokens.refreshToken) {
+			setCookie(c, REFRESH_COOKIE, authResult.tokens.refreshToken, {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === "production",
+				sameSite: "strict",
+				maxAge: 60 * 60 * 24 * 30,
+			})
+		}
 
 		return c.json({
 			user: authResult.user,
@@ -171,14 +190,53 @@ router.post("/oauth/callback", async (c) => {
 	}
 })
 
-router.post("/logout", authMiddleware, async (c) => {
+// Refresh session using refresh token cookie
+router.post("/refresh", async (c) => {
+	const cookieHeader = c.req.header("cookie") ?? ""
+	const match = cookieHeader.match(/holiyay_refresh=([^;]+)/)
+	const refreshToken = match?.[1] ? decodeURIComponent(match[1]) : null
+
+	if (!refreshToken) {
+		return c.json({ error: "No refresh token" }, 400)
+	}
+
+	try {
+		const tokens = await authService.refreshToken(refreshToken)
+
+		setCookie(c, COOKIE_NAME, tokens.accessToken, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "strict",
+			maxAge: tokens.expiresIn,
+		})
+
+		if (tokens.refreshToken) {
+			setCookie(c, REFRESH_COOKIE, tokens.refreshToken, {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === "production",
+				sameSite: "strict",
+				maxAge: 60 * 60 * 24 * 30,
+			})
+		}
+
+		const user = await authService.verifyAccessToken(tokens.accessToken)
+		return c.json({ user })
+	} catch (err) {
+		return handleError(c, err)
+	}
+})
+
+router.post("/logout", async (c) => {
 	const authHeader = c.req.header("Authorization")
 	const token = authHeader?.replace("Bearer ", "") ?? ""
 
-	await authService.logout(token)
+	if (token) {
+		await authService.logout(token)
+	}
 
-	// Delete session cookie
+	// Delete session + refresh cookies
 	deleteCookie(c, COOKIE_NAME)
+	deleteCookie(c, REFRESH_COOKIE)
 
 	return c.json({ message: "Logged out successfully" })
 })

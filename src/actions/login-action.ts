@@ -1,39 +1,51 @@
 "use server"
 
 import { cookies } from "next/headers"
-import api from "@/lib/api"
-import { parseSetCookie } from "@/lib/utils"
+import { authService } from "@/api/services/auth.service"
+import type { AuthUser } from "@/api/types"
 
 const COOKIE_NAME = "holiyay_session"
-const DEFAULT_MAX_AGE = 60 * 60 * 24 * 7 // 7 days
+const REFRESH_COOKIE = "holiyay_refresh"
 
 export async function loginAction(email: string, password: string) {
-	const result = await api.auth.login({ email, password })
+	try {
+		const authResult = await authService.login({ email, password })
 
-	// If login succeeded, set the session cookie on the server response so the
-	// browser receives it. This forwards the session token from the backend to
-	// the client when using server actions.
-	const setCookieHeader = result.headers?.["set-cookie"]
-	if (setCookieHeader) {
-		try {
+		if (authResult.tokens) {
 			const cookieStore = await cookies()
-			const parsed = parseSetCookie(setCookieHeader)
 			cookieStore.set({
-				name: parsed.name ?? COOKIE_NAME,
-				value: parsed.value ?? "",
-				httpOnly: parsed.httpOnly ?? true,
-				secure: parsed.secure ?? process.env.NODE_ENV === "production",
-				sameSite: parsed.sameSite ?? "lax",
-				path: parsed.path ?? "/",
-				maxAge: parsed.maxAge ?? result.data?.expiresIn ?? DEFAULT_MAX_AGE,
-				expires: parsed.expires,
-				domain: parsed.domain,
+				name: COOKIE_NAME,
+				value: authResult.tokens.accessToken,
+				httpOnly: true,
+				secure: process.env.NODE_ENV === "production",
+				sameSite: "strict",
+				path: "/",
+				maxAge: authResult.tokens.expiresIn,
 			})
-		} catch (err) {
-			// Log but don't throw - we still want the login result returned
-			console.error("Failed to set session cookie:", err)
+
+			if (authResult.tokens.refreshToken) {
+				cookieStore.set({
+					name: REFRESH_COOKIE,
+					value: authResult.tokens.refreshToken,
+					httpOnly: true,
+					secure: process.env.NODE_ENV === "production",
+					sameSite: "strict",
+					path: "/",
+					maxAge: 60 * 60 * 24 * 30, // 30 days
+				})
+			}
+		}
+
+		return {
+			data: { user: authResult.user } as { user: AuthUser },
+			error: null,
+			headers: {},
+		}
+	} catch (err) {
+		return {
+			data: null,
+			error: { message: err instanceof Error ? err.message : "Login failed" },
+			headers: {},
 		}
 	}
-
-	return result
 }
