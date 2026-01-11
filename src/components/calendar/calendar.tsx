@@ -62,8 +62,20 @@ function timeToMinutes(time?: string | null) {
 	return hours * 60 + minutes
 }
 
-function sortItemsByTime(items: ItemResponse[] = []) {
+/**
+ * Sort items for a given day. Continuation items (those that started before the day)
+ * should be prioritized (appear first) without mutating the original item objects.
+ */
+function sortItemsForDay(items: ItemResponse[] = [], dayStr?: string) {
 	return items.slice().sort((a, b) => {
+		// Give continuation items (started before the day) higher priority
+		if (dayStr) {
+			const aCont = a.startDate < dayStr
+			const bCont = b.startDate < dayStr
+			if (aCont !== bCont) return aCont ? -1 : 1
+		}
+
+		// Fallback to time-based ordering
 		const aStart = timeToMinutes(a.startTime)
 		const bStart = timeToMinutes(b.startTime)
 		if (aStart !== bStart) return aStart - bStart
@@ -275,7 +287,7 @@ function Controls() {
 								onClick={() => setCreateItemModalOpen(true)}
 								disabled={!calendar || createItemModalOpen}
 							>
-								Item
+								Event
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
@@ -498,15 +510,23 @@ function CalendarView() {
 
 											<div className="mt-2 flex flex-col gap-2">
 												{(() => {
-													const itemsForDay = sortItemsByTime(
-														(calendar?.items ?? []).filter(
-															(i) => i.date === format(day, "yyyy-MM-dd"),
-														),
+													const dayStr = format(day, "yyyy-MM-dd")
+													const itemsForDay = sortItemsForDay(
+														(calendar?.items ?? []).filter((i) => {
+															const start = i.startDate
+															const end = i.endDate ?? i.startDate
+															return start <= dayStr && end >= dayStr
+														}),
+														dayStr,
 													)
 													return (
 														<>
 															{itemsForDay.slice(0, 5).map((item) => (
-																<CalendarItem key={item.id} item={item} />
+																<CalendarItem
+																	key={`${item.id}-${dayStr}`}
+																	item={item}
+																	date={day}
+																/>
 															))}
 															{itemsForDay.length > 5 && (
 																<MorePopover items={itemsForDay.slice(5)} />
@@ -544,6 +564,15 @@ function CalendarView() {
 											end: endOfDay(endDate),
 										})
 										const passed = isBefore(day, todayStart)
+										const dayStr = format(day, "yyyy-MM-dd")
+										const itemsForDay = sortItemsForDay(
+											(calendar?.items ?? []).filter((i) => {
+												const start = i.startDate
+												const end = i.endDate ?? i.startDate
+												return start <= dayStr && end >= dayStr
+											}),
+											dayStr,
+										)
 										return (
 											<Day
 												key={`day-${day.getTime()}`}
@@ -551,11 +580,7 @@ function CalendarView() {
 												inMonth={inMonth}
 												inRange={inRange}
 												isPast={passed}
-												items={sortItemsByTime(
-													(calendar?.items ?? []).filter(
-														(i) => i.date === format(day, "yyyy-MM-dd"),
-													),
-												)}
+												items={itemsForDay}
 											/>
 										)
 									})}
@@ -611,7 +636,11 @@ function Day({
 					{items && items.length > 0 ? (
 						<>
 							{items.slice(0, 3).map((item) => (
-								<CalendarItem key={item.id} item={item} />
+								<CalendarItem
+									key={`${item.id}-${format(date, "yyyy-MM-dd")}`}
+									item={item}
+									date={date}
+								/>
 							))}
 							{items.length > 3 && <MorePopover items={items.slice(3)} />}
 						</>
@@ -622,9 +651,28 @@ function Day({
 	)
 }
 
-function CalendarItem({ item }: { item: ItemResponse }) {
+function CalendarItem({ item, date }: { item: ItemResponse; date?: Date }) {
 	const [opened, { open, close }] = useDisclosure(false)
-	const timeLabel = item.startTime ? item.startTime.slice(0, 5) : null
+	const dayStr = date ? format(date, "yyyy-MM-dd") : null
+	const start = item.startDate
+	const end = item.endDate ?? item.startDate
+
+	const startsToday = dayStr ? start === dayStr : true
+	const continuesFromPrev = dayStr ? start < dayStr : false
+	const continuesToNext = dayStr ? end > dayStr : false
+
+	// show time label only on the start day (Apple-style: title is shown on start)
+	const timeLabel =
+		startsToday && item.startTime ? item.startTime.slice(0, 5) : null
+
+	// radius: single-day -> rounded, start -> rounded left, end -> rounded right,
+	// middle -> no rounding (seamless connection)
+	let radiusClass = "rounded-md"
+	if (continuesFromPrev && continuesToNext) radiusClass = "rounded-none"
+	else if (continuesFromPrev && !continuesToNext) radiusClass = "rounded-r-md"
+	else if (!continuesFromPrev && continuesToNext) radiusClass = "rounded-l-md"
+
+	const baseClass = `overflow-hidden bg-accent text-xs px-1 py-0.5 truncate w-full text-left flex items-center gap-2 -mx-1 ${radiusClass}`
 
 	return (
 		<Popover open={opened}>
@@ -634,13 +682,15 @@ function CalendarItem({ item }: { item: ItemResponse }) {
 					onFocus={open}
 					onBlur={close}
 					onClick={open}
-					className="overflow-hidden bg-accent rounded text-xs px-1 py-0.5 truncate max-w-full text-left flex items-center gap-2"
+					className={baseClass}
 					aria-label={item.title}
 				>
-					{timeLabel && (
-						<span className="text-[11px] text-neutral-500">{timeLabel}</span>
-					)}
-					<span className="truncate">{item.title}</span>
+					<>
+						{timeLabel && (
+							<span className="text-[11px] text-neutral-500">{timeLabel}</span>
+						)}
+						<span className="truncate">{item.title}</span>
+					</>
 				</button>
 			</PopoverTrigger>
 			<PopoverContent className="w-72 transition-opacity duration-200 ease-in-out data-[state=open]:opacity-100 data-[state=closed]:opacity-0">

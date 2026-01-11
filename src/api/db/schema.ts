@@ -87,7 +87,8 @@ export type NewCalendarShare = Omit<CalendarShare, "id" | "invitedAt"> & {
 export type Item = {
 	id: string
 	calendarId: string
-	date: string // YYYY-MM-DD
+	startDate: string // YYYY-MM-DD
+	endDate: string | null // YYYY-MM-DD
 	title: string
 	description: string | null
 	startTime: string | null // HH:MM:SS
@@ -104,7 +105,12 @@ export type NewItem = Omit<Item, "id" | "createdAt" | "updatedAt"> &
 	Partial<
 		Pick<
 			Item,
-			"description" | "startTime" | "endTime" | "location" | "checklistId"
+			| "description"
+			| "startTime"
+			| "endTime"
+			| "location"
+			| "checklistId"
+			| "endDate"
 		>
 	>
 

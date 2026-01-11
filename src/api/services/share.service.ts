@@ -177,7 +177,8 @@ export const shareService = {
 			items: items.map((item) => ({
 				id: item.id,
 				calendarId: item.calendarId,
-				date: item.date,
+				startDate: item.startDate,
+				endDate: item.endDate,
 				title: item.title,
 				description: item.description,
 				startTime: item.startTime,

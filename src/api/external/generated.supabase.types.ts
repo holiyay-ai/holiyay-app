@@ -126,7 +126,8 @@ export type Database = {
 					calendar_id: string
 					category: string
 					created_at: string
-					date: string
+					start_date: string
+					end_date: string | null
 					description: string | null
 					end_time: string | null
 					id: string
@@ -141,7 +142,8 @@ export type Database = {
 					calendar_id: string
 					category?: string
 					created_at?: string
-					date: string
+					start_date: string
+					end_date?: string | null
 					description?: string | null
 					end_time?: string | null
 					id?: string
@@ -156,7 +158,8 @@ export type Database = {
 					calendar_id?: string
 					category?: string
 					created_at?: string
-					date?: string
+					start_date?: string
+					end_date?: string | null
 					description?: string | null
 					end_time?: string | null
 					id?: string

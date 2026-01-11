@@ -3,7 +3,12 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { SparklesIcon } from "lucide-react"
 import { useCallback, useTransition } from "react"
-import { useForm, useFormContext } from "react-hook-form"
+import {
+	FormProvider,
+	useForm,
+	useFormContext,
+	useWatch,
+} from "react-hook-form"
 import { toast } from "sonner"
 import type z from "zod"
 import { postCalendarItemAction } from "@/actions/post-calendar-item"
@@ -68,11 +73,13 @@ type CreateItemFormProps = {
 function CreateItemForm({ onClose, onCreated, calendar }: CreateItemFormProps) {
 	const form = useForm({
 		defaultValues: {
-			date: "",
+			startDate: "",
+			endDate: "",
 			title: "",
 			startTime: "",
 			endTime: "",
 			description: "",
+			location: "",
 		},
 		mode: "onBlur",
 		resolver: zodResolver(
@@ -92,44 +99,61 @@ function CreateItemForm({ onClose, onCreated, calendar }: CreateItemFormProps) {
 		})
 	})
 	return (
-		<DialogContent>
-			<form className="contents" onSubmit={onSubmit}>
-				<DialogHeader>
-					<DialogTitle>Create a new event</DialogTitle>
-					<DialogDescription>
-						Fill in the details below to create a new event to your plan.
-					</DialogDescription>
-					<DialogClose type="button" onClick={onClose} />
-				</DialogHeader>
-				<FieldGroup>
-					<Field data-invalid={!!form.formState.errors.title}>
-						<FieldLabel htmlFor="title">Title</FieldLabel>
-						<FieldDescription>Name of the event</FieldDescription>
-						<Input
-							type="text"
-							id="title"
-							{...form.register("title")}
-							aria-invalid={!!form.formState.errors.title}
-							disabled={isPending}
-						/>
-						<FieldError>{form.formState.errors.title?.message}</FieldError>
-					</Field>
-
-					<section className="flex flex-row gap-2 items-start">
-						<Field data-invalid={!!form.formState.errors.date}>
-							<FieldLabel htmlFor="date">When?</FieldLabel>
+		<FormProvider {...form}>
+			<DialogContent>
+				<form className="contents" onSubmit={onSubmit}>
+					<DialogHeader>
+						<DialogTitle>Create a new event</DialogTitle>
+						<DialogDescription>
+							Fill in the details below to create a new event to your plan.
+						</DialogDescription>
+						<DialogClose type="button" onClick={onClose} />
+					</DialogHeader>
+					<FieldGroup>
+						<Field data-invalid={!!form.formState.errors.title}>
+							<FieldLabel htmlFor="title">Title</FieldLabel>
+							<FieldDescription>Name of the event</FieldDescription>
 							<Input
 								type="text"
-								id="date"
-								{...form.register("date")}
-								aria-invalid={!!form.formState.errors.date}
+								id="title"
+								{...form.register("title")}
+								aria-invalid={!!form.formState.errors.title}
 								disabled={isPending}
 							/>
-							<FieldError>{form.formState.errors.date?.message}</FieldError>
+							<FieldError>{form.formState.errors.title?.message}</FieldError>
 						</Field>
+
+						<section className="flex flex-row gap-2 items-start">
+							<Field data-invalid={!!form.formState.errors.startDate}>
+								<FieldLabel htmlFor="startDate">Start date</FieldLabel>
+								<Input
+									type="text"
+									id="startDate"
+									{...form.register("startDate")}
+									aria-invalid={!!form.formState.errors.startDate}
+									disabled={isPending}
+								/>
+								<FieldError>
+									{form.formState.errors.startDate?.message}
+								</FieldError>
+							</Field>
+							<Field data-invalid={!!form.formState.errors.endDate}>
+								<FieldLabel htmlFor="endDate"> End date</FieldLabel>
+								<Input
+									type="text"
+									id="endDate"
+									{...form.register("endDate")}
+									aria-invalid={!!form.formState.errors.endDate}
+									disabled={isPending}
+								/>
+								<FieldError>
+									{form.formState.errors.endDate?.message}
+								</FieldError>
+							</Field>
+						</section>
 						<section className="flex flex-row gap-2 items-start">
 							<Field data-invalid={!!form.formState.errors.startTime}>
-								<FieldLabel htmlFor="startTime">From</FieldLabel>
+								<FieldLabel htmlFor="startTime">Start time</FieldLabel>
 								<Input
 									type="text"
 									id="startTime"
@@ -142,7 +166,7 @@ function CreateItemForm({ onClose, onCreated, calendar }: CreateItemFormProps) {
 								</FieldError>
 							</Field>
 							<Field data-invalid={!!form.formState.errors.endTime}>
-								<FieldLabel htmlFor="endTime">To</FieldLabel>
+								<FieldLabel htmlFor="endTime">End time</FieldLabel>
 								<Input
 									type="text"
 									id="endTime"
@@ -155,43 +179,47 @@ function CreateItemForm({ onClose, onCreated, calendar }: CreateItemFormProps) {
 								</FieldError>
 							</Field>
 						</section>
-					</section>
-					<Field data-invalid={!!form.formState.errors.description}>
-						<FieldLabel htmlFor="description">
-							Description (optional)
-						</FieldLabel>
-						<FieldDescription>Short description of the event</FieldDescription>
-						<Textarea
-							id="description"
-							{...form.register("description")}
-							aria-invalid={!!form.formState.errors.description}
+						<Field data-invalid={!!form.formState.errors.description}>
+							<FieldLabel htmlFor="description">
+								Description (optional)
+							</FieldLabel>
+							<FieldDescription>
+								Short description of the event
+							</FieldDescription>
+							<Textarea
+								id="description"
+								{...form.register("description")}
+								aria-invalid={!!form.formState.errors.description}
+								disabled={isPending}
+							/>
+							<FieldError>
+								{form.formState.errors.description?.message}
+							</FieldError>
+						</Field>
+					</FieldGroup>
+					<WeatherReport />
+					<Separator />
+					<ChecklistHandler />
+					<DialogFooter>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={onClose}
 							disabled={isPending}
-						/>
-						<FieldError>
-							{form.formState.errors.description?.message}
-						</FieldError>
-					</Field>
-				</FieldGroup>
-				<Separator />
-				<WeatherReport />
-				<Separator />
-				<ChecklistHandler />
-				<DialogFooter>
-					<Button
-						type="button"
-						variant="outline"
-						onClick={onClose}
-						disabled={isPending}
-					>
-						Cancel
-					</Button>
-					<Button type="submit" disabled={isPending || !form.formState.isValid}>
-						{isPending && <Spinner />}
-						Create
-					</Button>
-				</DialogFooter>
-			</form>
-		</DialogContent>
+						>
+							Cancel
+						</Button>
+						<Button
+							type="submit"
+							disabled={isPending || !form.formState.isValid}
+						>
+							{isPending && <Spinner />}
+							Create
+						</Button>
+					</DialogFooter>
+				</form>
+			</DialogContent>
+		</FormProvider>
 	)
 }
 
@@ -206,7 +234,7 @@ function ChecklistHandler() {
 		<section inert={isPending} className={cn(isPending && "opacity-50")}>
 			<div className="flex flex-row justify-between gap-2">
 				<h4>Checklist</h4>
-				<Button variant="outline" onClick={handleGenerateItems}>
+				<Button variant="outline" onClick={handleGenerateItems} type="button">
 					<SparklesIcon />
 				</Button>
 			</div>
@@ -216,11 +244,18 @@ function ChecklistHandler() {
 }
 
 function WeatherReport() {
+	const location = useWatch<CreateItemFormType>({ name: "location" })
+	if (!location) {
+		return null
+	}
 	return (
-		<section>
-			<div className="flex flex-row justify-between gap-2">
-				<h4>Weather report</h4>
-			</div>
-		</section>
+		<>
+			<Separator />
+			<section>
+				<div className="flex flex-row justify-between gap-2">
+					<h4>Weather report</h4>
+				</div>
+			</section>
+		</>
 	)
 }

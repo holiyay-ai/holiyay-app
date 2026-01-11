@@ -11,7 +11,8 @@ function mapRow(row: DbItemRow): Item {
 	return {
 		id: row.id,
 		calendarId: row.calendar_id,
-		date: row.date,
+		startDate: row.start_date,
+		endDate: row.end_date ?? row.start_date,
 		title: row.title,
 		description: row.description ?? null,
 		startTime: row.start_time ?? null,
@@ -53,7 +54,7 @@ export const itemRepository = {
 			.from(items)
 			.select("*")
 			.eq("calendar_id", calendarId)
-			.order("date", { ascending: true })
+			.order("start_date", { ascending: true })
 			.order("order_index", { ascending: true })
 		if (error) throw new AppError(error.message, "INTERNAL_ERROR")
 		return (data ?? []).map(mapRow)
@@ -61,14 +62,14 @@ export const itemRepository = {
 
 	async findByCalendarAndDate(
 		calendarId: string,
-		date: string,
+		startDate: string,
 	): Promise<Item[]> {
 		const supabase = getSupabaseAdmin()
 		const { data, error } = await supabase
 			.from(items)
 			.select("*")
 			.eq("calendar_id", calendarId)
-			.eq("date", date)
+			.eq("start_date", startDate)
 			.order("order_index", { ascending: true })
 		if (error) throw new AppError(error.message, "INTERNAL_ERROR")
 		return (data ?? []).map(mapRow)
@@ -78,7 +79,8 @@ export const itemRepository = {
 		const supabase = getSupabaseAdmin()
 		const insertPayload: DbItemInsert = {
 			calendar_id: data.calendarId,
-			date: data.date,
+			start_date: data.startDate,
+			end_date: data.endDate ?? null,
 			title: data.title,
 			description: data.description ?? null,
 			start_time: data.startTime ?? null,
@@ -105,7 +107,8 @@ export const itemRepository = {
 	): Promise<Item | null> {
 		const supabase = getSupabaseAdmin()
 		const updateData: Record<string, unknown> = {}
-		if (data.date !== undefined) updateData.date = data.date
+		if (data.startDate !== undefined) updateData.startDate = data.startDate
+		if (data.endDate !== undefined) updateData.endDate = data.endDate
 		if (data.title !== undefined) updateData.title = data.title
 		if (data.description !== undefined)
 			updateData.description = data.description
@@ -139,7 +142,7 @@ export const itemRepository = {
 			.from(items)
 			.select("order_index")
 			.eq("calendar_id", calendarId)
-			.eq("date", date)
+			.eq("start_date", date)
 			.order("order_index", { ascending: true })
 		if (error) throw new AppError(error.message, "INTERNAL_ERROR")
 		const existing = data ?? []

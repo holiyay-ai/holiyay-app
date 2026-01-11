@@ -67,7 +67,8 @@ export interface CalendarWithItems {
 export interface ItemResponse {
 	id: string
 	calendarId: string
-	date: string
+	startDate: string
+	endDate: string | null
 	title: string
 	description: string | null
 	startTime: string | null

@@ -2,9 +2,10 @@
 
 import { useSearchParams } from "next/navigation"
 import { createContext, type ReactNode, useContext, useState } from "react"
+import { toast } from "sonner"
 import { getCalendarAction } from "@/actions/get-calendar"
 import { getCalendarsAction } from "@/actions/get-calendars"
-import api, { type CalendarWithItems, type CalendarWithRole } from "@/lib/api"
+import type { CalendarWithItems, CalendarWithRole } from "@/lib/api"
 import { useApi } from "@/lib/hooks"
 
 interface CalendarContextValue {
@@ -41,12 +42,20 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
 	const calendarsQuery = useApi("calendars", async () => {
 		return (await getCalendarsAction()).data
 	})
-	const calendarQuery = useApi(["calendar", calendarId], async () => {
-		if (!calendarId || typeof calendarId !== "string") {
-			return null
-		}
-		return (await getCalendarAction(calendarId)).data
-	})
+	const calendarQuery = useApi(
+		["calendar", calendarId],
+		async () => {
+			if (!calendarId || typeof calendarId !== "string") {
+				return null
+			}
+			return await getCalendarAction(calendarId)
+		},
+		{
+			onError: (err) => {
+				toast.error(err.message)
+			},
+		},
+	)
 
 	// Modal state
 	const [createCalendarModalOpen, setCreateCalendarModalOpen] = useState(false)

@@ -12,7 +12,8 @@ import { calendarRepository } from "../repositories/calendar.repository"
 import { itemRepository } from "../repositories/item.repository"
 
 export interface CreateItemInput {
-	date: string
+	startDate: string
+	endDate?: string | undefined
 	title: string
 	description?: string | undefined
 	startTime?: string | undefined
@@ -24,7 +25,8 @@ export interface CreateItemInput {
 }
 
 export interface UpdateItemInput {
-	date?: string | undefined
+	startDate?: string | undefined
+	endDate?: string | undefined
 	title?: string | undefined
 	description?: string | null | undefined
 	startTime?: string | null | undefined
@@ -101,7 +103,12 @@ export const itemService = {
 		const calendar = await calendarRepository.findById(calendarId)
 		if (!calendar) throw new NotFoundError("Calendar")
 
-		if (input.date < calendar.startDate || input.date > calendar.endDate) {
+		if (
+			input.startDate < calendar.startDate ||
+			input.startDate > calendar.endDate ||
+			(input.endDate && input.endDate < calendar.startDate) ||
+			(input.endDate && input.endDate > calendar.endDate)
+		) {
 			throw new ValidationError(
 				`Date must be between ${calendar.startDate} and ${calendar.endDate}`,
 			)
@@ -109,11 +116,12 @@ export const itemService = {
 
 		const orderIndex =
 			input.orderIndex ??
-			(await itemRepository.getNextOrderIndex(calendarId, input.date))
+			(await itemRepository.getNextOrderIndex(calendarId, input.startDate))
 
 		const newItem: NewItem = {
 			calendarId,
-			date: input.date,
+			startDate: input.startDate,
+			endDate: input.endDate || null,
 			title: input.title,
 			description: input.description || null,
 			startTime: input.startTime || null,
@@ -136,7 +144,8 @@ export const itemService = {
 
 		const updateData: Partial<Item> = {}
 
-		if (input.date !== undefined) updateData.date = input.date
+		if (input.startDate !== undefined) updateData.startDate = input.startDate
+		if (input.endDate !== undefined) updateData.endDate = input.endDate
 		if (input.title !== undefined) updateData.title = input.title
 		if (input.description !== undefined)
 			updateData.description = input.description
@@ -179,17 +188,19 @@ export const itemService = {
 	async moveToDate(
 		itemId: string,
 		userId: string,
-		newDate: string,
+		newStartDate: string,
+		newEndDate: string,
 	): Promise<Item> {
 		const item = await getItemWithAccess(itemId, userId, true)
 
 		const orderIndex = await itemRepository.getNextOrderIndex(
 			item.calendarId,
-			newDate,
+			newStartDate,
 		)
 
 		const updated = await itemRepository.update(itemId, {
-			date: newDate,
+			startDate: newStartDate,
+			endDate: newEndDate,
 			orderIndex,
 		})
 
@@ -203,19 +214,22 @@ export const itemService = {
 	async duplicate(
 		itemId: string,
 		userId: string,
-		targetDate?: string,
+		targetStartDate?: string,
+		targetEndDate?: string,
 	): Promise<Item> {
 		const item = await getItemWithAccess(itemId, userId, true)
 
-		const date = targetDate ?? item.date
+		const startDate = targetStartDate ?? item.startDate
+		const endDate = targetEndDate ?? item.endDate
 		const orderIndex = await itemRepository.getNextOrderIndex(
 			item.calendarId,
-			date,
+			startDate,
 		)
 
 		const newItem: NewItem = {
 			calendarId: item.calendarId,
-			date,
+			startDate: startDate,
+			endDate: endDate,
 			title: item.title,
 			description: item.description,
 			startTime: item.startTime,

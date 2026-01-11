@@ -258,7 +258,8 @@ export const calendars = {
 // ============================================
 
 export interface CreateItemRequest {
-	date: string
+	startDate: string
+	endDate?: string | undefined
 	title: string
 	description?: string | undefined
 	startTime?: string | undefined
@@ -270,7 +271,8 @@ export interface CreateItemRequest {
 }
 
 export interface UpdateItemRequest {
-	date?: string
+	startDate?: string
+	endDate?: string | undefined
 	title?: string
 	description?: string | null
 	startTime?: string | null

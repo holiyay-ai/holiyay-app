@@ -141,13 +141,19 @@ router.post("/items/:itemId/move", authMiddleware, async (c) => {
 	const itemId = c.req.param("itemId")
 	const body = await c.req.json()
 
-	const newDate = body.date as string | undefined
-	if (!newDate) {
+	const newStartDate = body.startDate as string | undefined
+	const newEndDate = body.endDate as string | undefined
+	if (!newStartDate || !newEndDate) {
 		return c.json({ error: "date is required" }, 400)
 	}
 
 	try {
-		const moved = await itemService.moveToDate(itemId, user.id, newDate)
+		const moved = await itemService.moveToDate(
+			itemId,
+			user.id,
+			newStartDate,
+			newEndDate,
+		)
 		return c.json(moved)
 	} catch (error) {
 		return handleError(c, error)

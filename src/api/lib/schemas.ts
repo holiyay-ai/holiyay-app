@@ -49,7 +49,11 @@ export const categorySchema = z.enum([
 ])
 
 export const createItemSchema = z.object({
-	date: z.string().regex(dateRegex, "Invalid date format (YYYY-MM-DD)"),
+	startDate: z.string().regex(dateRegex, "Invalid date format (YYYY-MM-DD)"),
+	endDate: z
+		.string()
+		.regex(dateRegex, "Invalid date format (YYYY-MM-DD)")
+		.optional(),
 	title: z.string().min(1, "Title is required").max(255),
 	description: z.string().optional(),
 	startTime: z
@@ -71,18 +75,27 @@ export const createItemSchemaWithinRange = (
 	endDate: string,
 ) =>
 	createItemSchema.superRefine((val, ctx) => {
-		if (val.date < startDate || val.date > endDate) {
+		if (val.startDate < startDate || val.startDate > endDate) {
 			ctx.addIssue({
 				code: "invalid_value",
-				path: ["date"],
-				message: `Date must be between ${startDate} and ${endDate}`,
-				values: [val.date],
+				path: ["startDate"],
+				message: `Start date must be between ${startDate} and ${endDate}`,
+				values: [val.startDate],
+			})
+		}
+		if (val.endDate && (val.endDate < val.startDate || val.endDate > endDate)) {
+			ctx.addIssue({
+				code: "invalid_value",
+				path: ["endDate"],
+				message: `End date must be between ${val.startDate} and ${endDate}`,
+				values: [val.endDate],
 			})
 		}
 	})
 
 export const updateItemSchema = z.object({
-	date: z.string().regex(dateRegex).optional(),
+	startDate: z.string().regex(dateRegex).optional(),
+	endDate: z.string().regex(dateRegex).optional(),
 	title: z.string().min(1).max(255).optional(),
 	description: z.string().optional().nullable(),
 	startTime: z.string().regex(timeRegex).optional().nullable(),
@@ -140,14 +153,14 @@ export const generateChecklistSchema = z.object({
 
 export const recommendActivitiesSchema = z.object({
 	destination: z.string().min(1, "Destination is required"),
-	date: z.string().regex(dateRegex).optional(),
+	startDate: z.string().regex(dateRegex).optional(),
 	interests: z.array(z.string()).optional().default([]),
 	limit: z.number().int().min(1).max(20).optional().default(5),
 })
 
 export const weatherQuerySchema = z.object({
 	location: z.string().min(1, "Location is required"),
-	date: z.string().regex(dateRegex).optional(),
+	startDate: z.string().regex(dateRegex).optional(),
 })
 
 export type RegisterInput = z.infer<typeof registerSchema>

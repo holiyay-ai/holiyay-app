@@ -6,5 +6,9 @@ import api from "@/lib/api"
 export async function getCalendarAction(calendarId: string) {
 	const cookieStore = await cookies()
 	const token = cookieStore.get("holiyay_session")?.value || ""
-	return await api.calendars.get(token, calendarId)
+	const result = await api.calendars.get(token, calendarId)
+	if (result.error) {
+		throw result.error
+	}
+	return result.data
 }
