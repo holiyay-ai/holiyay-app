@@ -19,6 +19,7 @@ import {
 import type { CalendarWithItems } from "@/api/types"
 import { cn } from "@/lib/utils"
 import { Button } from "../ui/button"
+import { Checkbox } from "../ui/checkbox"
 import {
 	Dialog,
 	DialogClose,
@@ -36,6 +37,7 @@ import {
 	FieldLabel,
 } from "../ui/field"
 import { Input } from "../ui/input"
+import { Label } from "../ui/label"
 import { Separator } from "../ui/separator"
 import { Spinner } from "../ui/spinner"
 import { Textarea } from "../ui/textarea"
@@ -179,6 +181,26 @@ function CreateItemForm({ onClose, onCreated, calendar }: CreateItemFormProps) {
 								</FieldError>
 							</Field>
 						</section>
+						<div className="flex items-center min-w-[100px] gap-2">
+							<Checkbox
+								id="allDay"
+								disabled={isPending}
+								onCheckedChange={(checked) => {
+									if (checked) {
+										form.setValue("startTime", "00:00")
+										form.setValue("endTime", "23:59")
+									} else {
+										form.setValue("startTime", "")
+										form.setValue("endTime", "")
+									}
+								}}
+								checked={
+									form.watch("startTime") === "00:00" &&
+									form.watch("endTime") === "23:59"
+								}
+							/>
+							<Label htmlFor="allDay">All day</Label>
+						</div>
 						<Field data-invalid={!!form.formState.errors.description}>
 							<FieldLabel htmlFor="description">
 								Description (optional)
