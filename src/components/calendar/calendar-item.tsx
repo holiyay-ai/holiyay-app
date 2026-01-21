@@ -1,10 +1,11 @@
 "use client"
 
-import { useDisclosure } from "@mantine/hooks"
 import { format } from "date-fns"
+import { useState } from "react"
 import type { ItemResponse } from "@/api/types"
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
 import { isAllDay } from "./helpers"
+import { useHoverPopover } from "./use-hover-popover"
 
 export function CalendarItem({
 	item,
@@ -13,7 +14,30 @@ export function CalendarItem({
 	item: ItemResponse
 	date?: Date
 }) {
-	const [opened, { open, close }] = useDisclosure(false)
+	const { open, setOpen, openPopover, closePopoverDelayed } =
+		useHoverPopover(500)
+	const [pinned, setPinned] = useState(false)
+
+	const handleTriggerMouseLeave = () => {
+		if (!pinned) closePopoverDelayed()
+	}
+	const handleContentMouseLeave = () => {
+		if (!pinned) closePopoverDelayed()
+	}
+	const onTriggerClick = () => {
+		if (!pinned) {
+			setPinned(true)
+			setOpen(true)
+		} else {
+			setPinned(false)
+			setOpen(false)
+		}
+	}
+	const onOpenChange = (next: boolean) => {
+		setOpen(next)
+		if (!next) setPinned(false)
+	}
+
 	const dayStr = date ? format(date, "yyyy-MM-dd") : null
 	const start = item.startDate
 	const end = item.endDate ?? item.startDate
@@ -49,13 +73,13 @@ export function CalendarItem({
 	const baseClass = `overflow-hidden bg-accent ${radiusClass} text-xs px-1 py-0.5 truncate w-full text-left flex items-center gap-2 -mx-1`
 
 	return (
-		<Popover open={opened}>
+		<Popover open={open} onOpenChange={onOpenChange}>
 			<PopoverTrigger asChild>
 				<button
 					type="button"
-					onFocus={open}
-					onBlur={close}
-					onClick={open}
+					onMouseEnter={openPopover}
+					onMouseLeave={handleTriggerMouseLeave}
+					onClick={onTriggerClick}
 					className={baseClass}
 					aria-label={item.title}
 				>
@@ -67,7 +91,11 @@ export function CalendarItem({
 					)}
 				</button>
 			</PopoverTrigger>
-			<PopoverContent className="w-72 transition-opacity duration-200 ease-in-out data-[state=open]:opacity-100 data-[state=closed]:opacity-0">
+			<PopoverContent
+				className="w-72 transition-opacity duration-200 ease-in-out data-[state=open]:opacity-100 data-[state=closed]:opacity-0"
+				onMouseEnter={openPopover}
+				onMouseLeave={handleContentMouseLeave}
+			>
 				<div className="text-sm font-medium">{item.title}</div>
 				<div className="text-xs text-neutral-500">
 					{isAllDay(item)

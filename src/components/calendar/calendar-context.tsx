@@ -5,6 +5,7 @@ import { createContext, type ReactNode, useContext, useState } from "react"
 import { toast } from "sonner"
 import { getCalendarAction } from "@/actions/get-calendar"
 import { getCalendarsAction } from "@/actions/get-calendars"
+import type { Item } from "@/api/types"
 import type { CalendarWithItems, CalendarWithRole } from "@/lib/api"
 import { useApi } from "@/lib/hooks"
 
@@ -18,12 +19,12 @@ interface CalendarContextValue {
 		setUpdateCalendarModalOpen: (open: boolean) => void
 		deleteCalendarModalOpen: boolean
 		setDeleteCalendarModalOpen: (open: boolean) => void
-		createItemModalOpen: boolean
-		setCreateItemModalOpen: (open: boolean) => void
-		updateItemModalOpen: boolean
-		setUpdateItemModalOpen: (open: boolean) => void
-		deleteItemModalOpen: boolean
-		setDeleteItemModalOpen: (open: boolean) => void
+		createItemModalOpen: CreateItemModalProps | null
+		setCreateItemModalOpen: (open: CreateItemModalProps | null) => void
+		updateItemModalOpen: UpdateItemModalProps | null
+		setUpdateItemModalOpen: (open: UpdateItemModalProps | null) => void
+		deleteItemModalOpen: DeleteItemModalProps | null
+		setDeleteItemModalOpen: (open: DeleteItemModalProps | null) => void
 	}
 	loading: {
 		calendars: boolean
@@ -32,11 +33,27 @@ interface CalendarContextValue {
 	refreshCalendar: () => Promise<void>
 }
 
+interface CalendarProviderProps {
+	children: ReactNode
+}
+
+type CreateItemModalProps = {
+	startDate?: string
+}
+
+type UpdateItemModalProps = {
+	item?: Item
+}
+
+type DeleteItemModalProps = {
+	item?: Item
+}
+
 const CalendarContext = createContext<CalendarContextValue | undefined>(
 	undefined,
 )
 
-export function CalendarProvider({ children }: { children: ReactNode }) {
+export function CalendarProvider({ children }: CalendarProviderProps) {
 	const searchParams = useSearchParams()
 	const calendarId = searchParams.get("calendar_id") || undefined
 	const calendarsQuery = useApi("calendars", async () => {
@@ -61,9 +78,12 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
 	const [createCalendarModalOpen, setCreateCalendarModalOpen] = useState(false)
 	const [updateCalendarModalOpen, setUpdateCalendarModalOpen] = useState(false)
 	const [deleteCalendarModalOpen, setDeleteCalendarModalOpen] = useState(false)
-	const [createItemModalOpen, setCreateItemModalOpen] = useState(false)
-	const [updateItemModalOpen, setUpdateItemModalOpen] = useState(false)
-	const [deleteItemModalOpen, setDeleteItemModalOpen] = useState(false)
+	const [createItemModalOpen, setCreateItemModalOpen] =
+		useState<CreateItemModalProps | null>(null)
+	const [updateItemModalOpen, setUpdateItemModalOpen] =
+		useState<UpdateItemModalProps | null>(null)
+	const [deleteItemModalOpen, setDeleteItemModalOpen] =
+		useState<DeleteItemModalProps | null>(null)
 
 	const value: CalendarContextValue = {
 		calendars: calendarsQuery.data ?? [],

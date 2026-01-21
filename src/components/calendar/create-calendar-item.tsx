@@ -1,9 +1,11 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
+import { format } from "date-fns"
 import { SparklesIcon } from "lucide-react"
 import { useCallback, useTransition } from "react"
 import {
+	Controller,
 	FormProvider,
 	useForm,
 	useFormContext,
@@ -20,6 +22,7 @@ import type { CalendarWithItems } from "@/api/types"
 import { cn } from "@/lib/utils"
 import { Button } from "../ui/button"
 import { Checkbox } from "../ui/checkbox"
+import { DatePickerInput } from "../ui/date-picker"
 import {
 	Dialog,
 	DialogClose,
@@ -53,14 +56,24 @@ export function CreateItemModal() {
 	} = useCalendar()
 	if (!calendar) return null
 	return (
-		<Dialog open={createItemModalOpen} onOpenChange={setCreateItemModalOpen}>
+		<Dialog
+			open={!!createItemModalOpen}
+			onOpenChange={(open) => {
+				if (open) {
+					setCreateItemModalOpen(createItemModalOpen)
+				} else {
+					setCreateItemModalOpen(null)
+				}
+			}}
+		>
 			{createItemModalOpen && (
 				<CreateItemForm
-					onClose={() => setCreateItemModalOpen(false)}
+					onClose={() => setCreateItemModalOpen(null)}
 					onCreated={async () => {
 						await refreshCalendar()
 					}}
 					calendar={calendar}
+					startDate={createItemModalOpen?.startDate}
 				/>
 			)}
 		</Dialog>
@@ -71,11 +84,17 @@ type CreateItemFormProps = {
 	onClose: () => void
 	onCreated: (itemId: string) => Promise<void>
 	calendar: CalendarWithItems
+	startDate?: string | undefined
 }
-function CreateItemForm({ onClose, onCreated, calendar }: CreateItemFormProps) {
+function CreateItemForm({
+	onClose,
+	onCreated,
+	calendar,
+	startDate,
+}: CreateItemFormProps) {
 	const form = useForm({
 		defaultValues: {
-			startDate: "",
+			startDate: startDate || "",
 			endDate: "",
 			title: "",
 			startTime: "",
@@ -105,7 +124,7 @@ function CreateItemForm({ onClose, onCreated, calendar }: CreateItemFormProps) {
 			<DialogContent>
 				<form className="contents" onSubmit={onSubmit}>
 					<DialogHeader>
-						<DialogTitle>Create a new event</DialogTitle>
+						<WatchedDialogTitle />
 						<DialogDescription>
 							Fill in the details below to create a new event to your plan.
 						</DialogDescription>
@@ -128,12 +147,17 @@ function CreateItemForm({ onClose, onCreated, calendar }: CreateItemFormProps) {
 						<section className="flex flex-row gap-2 items-start">
 							<Field data-invalid={!!form.formState.errors.startDate}>
 								<FieldLabel htmlFor="startDate">Start date</FieldLabel>
-								<Input
-									type="text"
-									id="startDate"
-									{...form.register("startDate")}
-									aria-invalid={!!form.formState.errors.startDate}
-									disabled={isPending}
+								<Controller
+									name="startDate"
+									render={({ field }) => (
+										<DatePickerInput
+											id="startDate"
+											value={field.value}
+											onChange={field.onChange}
+											aria-invalid={!!form.formState.errors.startDate}
+											disabled={isPending}
+										/>
+									)}
 								/>
 								<FieldError>
 									{form.formState.errors.startDate?.message}
@@ -141,18 +165,38 @@ function CreateItemForm({ onClose, onCreated, calendar }: CreateItemFormProps) {
 							</Field>
 							<Field data-invalid={!!form.formState.errors.endDate}>
 								<FieldLabel htmlFor="endDate"> End date</FieldLabel>
-								<Input
-									type="text"
-									id="endDate"
-									{...form.register("endDate")}
-									aria-invalid={!!form.formState.errors.endDate}
-									disabled={isPending}
+								<Controller
+									name="endDate"
+									render={({ field }) => (
+										<DatePickerInput
+											id="endDate"
+											value={field.value}
+											onChange={field.onChange}
+											aria-invalid={!!form.formState.errors.endDate}
+											disabled={isPending}
+										/>
+									)}
 								/>
 								<FieldError>
 									{form.formState.errors.endDate?.message}
 								</FieldError>
 							</Field>
 						</section>
+						<div className="flex items-center min-w-[100px] gap-2">
+							<Checkbox
+								id="sameDate"
+								disabled={isPending}
+								onCheckedChange={(checked) => {
+									if (checked) {
+										form.setValue("endDate", form.watch("startDate"))
+									} else {
+										form.setValue("endDate", "")
+									}
+								}}
+								checked={form.watch("startDate") === form.watch("endDate")}
+							/>
+							<Label htmlFor="sameDate">Ends same day</Label>
+						</div>
 						<section className="flex flex-row gap-2 items-start">
 							<Field data-invalid={!!form.formState.errors.startTime}>
 								<FieldLabel htmlFor="startTime">Start time</FieldLabel>
@@ -187,8 +231,12 @@ function CreateItemForm({ onClose, onCreated, calendar }: CreateItemFormProps) {
 								disabled={isPending}
 								onCheckedChange={(checked) => {
 									if (checked) {
-										form.setValue("startTime", "00:00")
-										form.setValue("endTime", "23:59")
+										form.setValue("startTime", "00:00", {
+											shouldValidate: true,
+										})
+										form.setValue("endTime", "23:59", {
+											shouldValidate: true,
+										})
 									} else {
 										form.setValue("startTime", "")
 										form.setValue("endTime", "")
@@ -242,6 +290,16 @@ function CreateItemForm({ onClose, onCreated, calendar }: CreateItemFormProps) {
 				</form>
 			</DialogContent>
 		</FormProvider>
+	)
+}
+
+function WatchedDialogTitle() {
+	const startDate = useWatch<CreateItemFormType>({ name: "startDate" })
+	return (
+		<DialogTitle>
+			Create a new event
+			{startDate ? ` on ${format(startDate, "dd MMM yyyy")}` : ""}
+		</DialogTitle>
 	)
 }
 

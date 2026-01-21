@@ -65,8 +65,8 @@ export function Controls() {
 								Plan
 							</DropdownMenuItem>
 							<DropdownMenuItem
-								onClick={() => setCreateItemModalOpen(true)}
-								disabled={!calendar || createItemModalOpen}
+								onClick={() => setCreateItemModalOpen({})}
+								disabled={!calendar || !!createItemModalOpen}
 							>
 								Item
 							</DropdownMenuItem>
