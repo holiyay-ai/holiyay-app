@@ -1,11 +1,12 @@
 "use client"
 
-import { Plus } from "lucide-react"
+import { CalendarIcon, PlaneIcon, Plus } from "lucide-react"
 import { Button } from "../ui/button"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuLabel,
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu"
 import { Input } from "../ui/input"
@@ -43,37 +44,51 @@ export function Controls() {
 			)}
 
 			<Portal target="#header-center">
-				<div className="flex items-center gap-2 w-full">
+				<div className="items-center gap-2 sm:w-[300px] md:w-[400px] lg:w-[500px] xl:w-[600px]">
 					<Input
 						disabled={loading.calendars}
 						className="w-full flex-1"
 						placeholder="Search in your agenda"
 					/>
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button disabled={loading.calendars}>
-								{loading.calendars ? <Spinner /> : <Plus />}
-								Create
-							</Button>
-						</DropdownMenuTrigger>
-
-						<DropdownMenuContent align="center">
-							<DropdownMenuItem
-								onClick={() => setCreateCalendarModalOpen(true)}
-								disabled={createCalendarModalOpen}
-							>
-								Plan
-							</DropdownMenuItem>
-							<DropdownMenuItem
-								onClick={() => setCreateItemModalOpen({})}
-								disabled={!calendar || !!createItemModalOpen}
-							>
-								Item
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
 				</div>
 			</Portal>
+
+			<div
+				id="fab"
+				className="flex items-center gap-2 fixed bottom-4 right-4 z-10"
+			>
+				<DropdownMenu modal={false}>
+					<DropdownMenuTrigger asChild>
+						<Button
+							size="icon-lg"
+							className="rounded-full"
+							disabled={loading.calendars}
+						>
+							{loading.calendars ? <Spinner /> : <Plus />}
+						</Button>
+					</DropdownMenuTrigger>
+
+					<DropdownMenuContent align="center">
+						<DropdownMenuLabel className="font-semibold text-xs opacity-50">
+							Create new...
+						</DropdownMenuLabel>
+						<DropdownMenuItem
+							onClick={() => setCreateCalendarModalOpen(true)}
+							disabled={createCalendarModalOpen}
+						>
+							<PlaneIcon />
+							Plan
+						</DropdownMenuItem>
+						<DropdownMenuItem
+							onClick={() => setCreateItemModalOpen({})}
+							disabled={!calendar || !!createItemModalOpen}
+						>
+							<CalendarIcon />
+							Event
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</div>
 		</>
 	)
 }

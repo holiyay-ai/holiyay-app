@@ -15,7 +15,7 @@ export function CalendarItem({
 	date?: Date
 }) {
 	const { open, setOpen, openPopover, closePopoverDelayed } =
-		useHoverPopover(500)
+		useHoverPopover(1000)
 	const [pinned, setPinned] = useState(false)
 
 	const handleTriggerMouseLeave = () => {
@@ -70,7 +70,7 @@ export function CalendarItem({
 	else if (continuesFromPrev && !continuesToNext) radiusClass = "rounded-r-md"
 	else if (!continuesFromPrev && continuesToNext) radiusClass = "rounded-l-md"
 
-	const baseClass = `overflow-hidden bg-accent ${radiusClass} text-xs px-1 py-0.5 truncate w-full text-left flex items-center gap-2 -mx-1`
+	const baseClass = `overflow-hidden bg-accent ${radiusClass} text-xs px-1 py-0.5 truncate w-full text-left flex items-center gap-2`
 
 	return (
 		<Popover open={open} onOpenChange={onOpenChange}>

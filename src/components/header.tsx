@@ -30,7 +30,7 @@ export function Header({
 	return (
 		<header
 			className={cn(
-				"flex flex-row items-center justify-end gap-4 p-4 w-full",
+				"flex flex-row items-center justify-end px-4 py-2 sm:p-4 w-full",
 				position === "fixed" ? "fixed top-0 left-0" : "",
 			)}
 		>
@@ -41,7 +41,7 @@ export function Header({
 				{children}
 			</section>
 			<section
-				className="flex flex-row items-center justify-center flex-1 gap-4"
+				className="flex-row items-center justify-center flex-1 gap-4 hidden sm:flex"
 				id="header-center"
 			>
 				{centerChildren}
@@ -52,7 +52,7 @@ export function Header({
 			>
 				{isAuthenticated && user && (
 					<ViewTransition>
-						<DropdownMenu>
+						<DropdownMenu modal={false}>
 							<DropdownMenuTrigger asChild>
 								<Button variant="outline" className="rounded-full">
 									{user.name}

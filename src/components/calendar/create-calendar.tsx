@@ -1,7 +1,8 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useTransition } from "react"
+import { useTimeout } from "@mantine/hooks"
+import { useCallback, useEffect, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { postCalendarAction } from "@/actions/post-calendar"
@@ -38,14 +39,13 @@ export function CreateCalendarModal() {
 			open={createCalendarModalOpen}
 			onOpenChange={setCreateCalendarModalOpen}
 		>
-			{createCalendarModalOpen && (
-				<CreateCalendarForm
-					onClose={() => setCreateCalendarModalOpen(false)}
-					onCreated={async (calendarId) => {
-						updateSearchParams("calendar_id", calendarId)
-					}}
-				/>
-			)}
+			<CreateCalendarForm
+				onClose={() => setCreateCalendarModalOpen(false)}
+				onCreated={async (calendarId) => {
+					updateSearchParams("calendar_id", calendarId)
+				}}
+				isOpen={!!createCalendarModalOpen}
+			/>
 		</Dialog>
 	)
 }
@@ -53,8 +53,13 @@ export function CreateCalendarModal() {
 type CreateCalendarFormProps = {
 	onClose: () => void
 	onCreated: (calendarId: string) => Promise<void>
+	isOpen: boolean
 }
-function CreateCalendarForm({ onClose, onCreated }: CreateCalendarFormProps) {
+function CreateCalendarForm({
+	onClose,
+	onCreated,
+	isOpen,
+}: CreateCalendarFormProps) {
 	const form = useForm({
 		defaultValues: {
 			name: "",
@@ -66,17 +71,28 @@ function CreateCalendarForm({ onClose, onCreated }: CreateCalendarFormProps) {
 		resolver: zodResolver(createCalendarSchema),
 	})
 	const [isPending, startTransition] = useTransition()
+	const resetForm = useTimeout(() => form.reset(), 300)
+	const handleClose = useCallback(() => {
+		onClose()
+		resetForm.start()
+	}, [onClose, resetForm])
 	const onSubmit = form.handleSubmit(async (data) => {
 		startTransition(async () => {
 			const result = await postCalendarAction(data)
 			if (result.data) {
 				await onCreated(result.data.id)
-				onClose()
+				handleClose()
 			} else {
 				toast.error("Failed to create plan")
 			}
 		})
 	})
+	useEffect(() => {
+		if (!isOpen) {
+			resetForm.start()
+		}
+		return () => resetForm.clear()
+	}, [isOpen, resetForm])
 	return (
 		<DialogContent>
 			<form className="contents" onSubmit={onSubmit}>

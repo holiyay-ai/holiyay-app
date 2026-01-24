@@ -21,3 +21,9 @@ export type {
 	LLMClient,
 } from "./llm.client"
 export { llmClient, parseJsonResponse } from "./llm.client"
+export type {
+	WeatherClient,
+	WeatherData,
+	WeatherOptions,
+} from "./weather.client"
+export { weatherClient } from "./weather.client"

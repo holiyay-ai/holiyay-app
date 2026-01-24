@@ -56,6 +56,18 @@ export const constants = {
 		},
 	},
 
+	weather: {
+		retry: {
+			maxRetries: 3,
+			initialDelayMs: 500,
+			maxDelayMs: 4000,
+			backoffMultiplier: 2,
+		},
+		climatology: {
+			ttlSeconds: 60 * 60 * 24 * 30,
+		},
+	},
+
 	auth: {
 		tokenPrefix: "Bearer",
 		passwordMinLength: 8,

@@ -23,6 +23,7 @@ import type {
 	SharedCalendarView,
 	ShareInfo,
 	ShareLink,
+	WeatherRange,
 } from "@/api/types"
 
 // Generic API response type
@@ -495,6 +496,49 @@ export const ai = {
 }
 
 // ============================================
+// Weather API
+// ============================================
+
+export const weather = {
+	/**
+	 * Get weather for a location / date range.
+	 * - `token` is optional (passed when caller has an auth token).
+	 * - `params` contains ISO dates (YYYY-MM-DD) for start/end and optional units.
+	 */
+	async get(
+		token: string | undefined,
+		params: {
+			location: string
+			startDate?: string
+			endDate?: string
+			units?: "metric" | "imperial"
+		},
+	): Promise<ApiResponse<WeatherRange>> {
+		const qs = new URLSearchParams()
+		qs.set("location", params.location)
+		if (params.startDate) qs.set("startDate", params.startDate)
+		if (params.endDate) qs.set("endDate", params.endDate)
+		if (params.units) qs.set("units", params.units)
+
+		return fetchApi<WeatherRange>(
+			`${await getBaseUrl()}/weather?${qs.toString()}`,
+			{
+				headers: token ? authHeader(token) : {},
+			},
+		)
+	},
+
+	/** Simple status check (useful for feature gating in the UI) */
+	async status(): Promise<
+		ApiResponse<{ available: boolean; message: string }>
+	> {
+		return fetchApi<{ available: boolean; message: string }>(
+			`${await getBaseUrl()}/weather/status`,
+		)
+	},
+}
+
+// ============================================
 // Unified API client
 // ============================================
 
@@ -504,11 +548,12 @@ export const api = {
 	items,
 	shares,
 	ai,
+	weather,
 }
 
 export default api
 
-// Re-export types for convenience
+// re-export shared types (including weather types)
 export type {
 	AuthResult,
 	AuthUser,
@@ -520,4 +565,6 @@ export type {
 	SharedCalendarView,
 	ShareInfo,
 	ShareLink,
+	WeatherData,
+	WeatherRange,
 } from "@/api/types"

@@ -53,9 +53,9 @@ export function CalendarList() {
 					</CardContent>
 					<CardFooter className="flex justify-between">
 						<div className="flex flex-col self-end">
-							<p className="flex items-center gap-2 text-xs text-muted-foreground">
+							<div className="flex items-center gap-2 text-xs text-muted-foreground">
 								Created by <UserName id={calendar.ownerId} />
-							</p>
+							</div>
 							<p className="flex items-center gap-2 text-xs text-muted-foreground">
 								{formatRelative(calendar.createdAt, new Date())}
 							</p>

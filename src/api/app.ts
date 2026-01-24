@@ -17,6 +17,7 @@ import { authRoutes } from "@/api/routes/auth"
 import { calendarRoutes } from "@/api/routes/calendars"
 import { itemRoutes } from "@/api/routes/items"
 import { shareRoutes } from "@/api/routes/shares"
+import { weatherRoutes } from "@/api/routes/weather"
 
 const app = new Hono().basePath("/api")
 
@@ -79,6 +80,7 @@ app.route("/calendars", calendarRoutes)
 app.route("/", itemRoutes)
 app.route("/", shareRoutes)
 app.route("/ai", aiRoutes)
+app.route("/weather", weatherRoutes)
 
 app.onError((err, c) => {
 	logger.error({ err }, "Request error")

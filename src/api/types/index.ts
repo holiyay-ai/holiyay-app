@@ -139,6 +139,43 @@ export interface RecommendationsResponse {
 	cached?: boolean
 }
 
+/**
+ * Weather types
+ *
+ * Shared, minimal types used by the frontend and server for calendar weather lookups.
+ * - `byDate` is keyed by ISO date strings (YYYY-MM-DD). Values are `null` when no
+ *   reliable forecast is available for that date.
+ */
+export interface WeatherData {
+	temperature: number
+	description: string
+	humidity: number
+	windSpeed: number
+	approximate?: boolean
+}
+
+export interface WeatherRange {
+	/**
+	 * Human-friendly location name (when available) and coordinates.
+	 * The client can use `locationName` for display and `lat`/`lon` for debugging.
+	 */
+	locationName?: string
+	lat: number
+	lon: number
+
+	/** timezone offset in seconds returned by the provider (optional) */
+	timezoneOffsetSeconds?: number
+
+	/** units the numeric values are expressed in */
+	units: "metric" | "imperial"
+
+	/** per-date mapping (ISO date -> WeatherData | null) */
+	byDate: Record<string, WeatherData | null>
+
+	/** provider/source identifier (optional) */
+	source?: string
+}
+
 export type { ErrorCode } from "../lib/errors"
 export {
 	AppError,

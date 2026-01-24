@@ -35,7 +35,7 @@ export function useMutableSearchParams() {
 
 type UseApiParams<T> = [
 	Parameters<typeof useSWR<T>>[0],
-	() => Promise<T>,
+	Parameters<typeof useSWR<T>>[1],
 	Parameters<typeof useSWR<T>>[2]?,
 ]
 export function useApi<T>(...args: UseApiParams<T>) {
