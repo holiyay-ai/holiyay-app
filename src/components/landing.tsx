@@ -23,11 +23,11 @@ export function Landing() {
 							</h2>
 						</section>
 						<section className="flex flex-col items-stretch justify-stretch w-full px-1 gap-1">
-							<Link href="/auth?type=login" passHref className="contents">
+							<Link href="/auth/login" passHref className="contents">
 								<Button size="lg">{t("landing:sign_in")}</Button>
 							</Link>
 							<Divider>{t("landing:or")}</Divider>
-							<Link href="/auth?type=register" passHref className="contents">
+							<Link href="/auth/register" passHref className="contents">
 								<Button size="lg">{t("landing:sign_up")}</Button>
 							</Link>
 						</section>

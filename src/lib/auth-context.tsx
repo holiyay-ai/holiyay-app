@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		try {
 			setUser(null)
 			await supabase.auth.signOut()
-			router.push("/auth?type=login")
+			router.push("/auth/login")
 		} catch (error) {
 			console.error("Logout failed:", error)
 		}

@@ -20,7 +20,7 @@ export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
 
 	useEffect(() => {
 		if (!isLoading && !isAuthenticated) {
-			window.location.href = "/auth?type=login"
+			window.location.href = "/auth/login"
 		}
 	}, [isLoading, isAuthenticated])
 

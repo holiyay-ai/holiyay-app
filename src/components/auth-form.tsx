@@ -12,6 +12,7 @@ import { registerAction } from "@/actions/register-action"
 import { GoogleIcon } from "@/assets/google-icon.svg"
 import { useAuth } from "@/lib/auth-context"
 import { loginSchema, registerSchema } from "@/lib/schemas"
+import { createClient } from "@/lib/supabase/client"
 import { GridBackground } from "./grid-background"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card"
@@ -46,9 +47,18 @@ export function AuthForm({ type }: AuthFormProps) {
 function SignInWithGoogleButton({ disabled }: { disabled?: boolean }) {
 	const { t } = useTranslation("auth")
 
-	function onClick() {
-		// Redirect to server-side OAuth endpoint which will forward to Supabase
-		window.location.assign(`/api/auth/oauth/google`)
+	const onClick = async () => {
+		const supabase = createClient()
+
+		const { error } = await supabase.auth.signInWithOAuth({
+			provider: "google",
+			options: {
+				redirectTo: `${window.location.origin}/auth/callback?next=/`,
+			},
+		})
+		if (error) {
+			toast.error(error.message)
+		}
 	}
 
 	return (
@@ -67,8 +77,17 @@ function SignInWithGoogleButton({ disabled }: { disabled?: boolean }) {
 
 function SignUpWithGoogleButton({ disabled }: { disabled?: boolean }) {
 	const { t } = useTranslation("auth")
-	function onClick() {
-		window.location.assign(`/api/auth/oauth/google`)
+	const onClick = async () => {
+		const supabase = createClient()
+		const { error } = await supabase.auth.signInWithOAuth({
+			provider: "google",
+			options: {
+				redirectTo: `${window.location.origin}/auth/callback?next=/`,
+			},
+		})
+		if (error) {
+			toast.error(error.message)
+		}
 	}
 
 	return (
@@ -156,7 +175,7 @@ function LoginForm() {
 				</form>
 			</CardContent>
 			<CardFooter>
-				<Link href="/auth?type=register" passHref className="contents">
+				<Link href="/auth/register" passHref className="contents">
 					<Button variant="ghost" className="w-full" disabled={isPending}>
 						{t("login.register_cta")}
 					</Button>
@@ -258,7 +277,7 @@ function RegisterForm() {
 				</form>
 			</CardContent>
 			<CardFooter>
-				<Link href="/auth?type=login" passHref className="contents">
+				<Link href="/auth/login" passHref className="contents">
 					<Button variant="ghost" className="w-full" disabled={isPending}>
 						{t("register.login_cta")}
 					</Button>
