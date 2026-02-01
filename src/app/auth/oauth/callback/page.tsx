@@ -31,7 +31,7 @@ export default function OAuthCallbackPage() {
 				if (error) {
 					console.error("OAuth callback error:", error.message)
 					setStatus("error")
-					router.replace("/auth/login?error=auth_callback_error")
+					router.replace("/auth?type=login&error=auth_callback_error")
 					return
 				}
 
@@ -41,12 +41,12 @@ export default function OAuthCallbackPage() {
 					router.replace("/")
 				} else {
 					// No session found, redirect to login
-					router.replace("/auth/login")
+					router.replace("/auth?type=login")
 				}
 			} catch (err) {
 				console.error("OAuth callback failed:", err)
 				setStatus("error")
-				router.replace("/auth/login?error=auth_callback_error")
+				router.replace("/auth?type=login&error=auth_callback_error")
 			}
 		}
 
