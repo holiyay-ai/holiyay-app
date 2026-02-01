@@ -1,64 +1,62 @@
 "use server"
 
-import { cookies } from "next/headers"
-import { authService } from "@/api/services/auth.service"
+import { createClient } from "@/lib/supabase/server"
+import type { ActionResponse, AuthUser } from "@/types"
 
-const COOKIE_NAME = "holiyay_session"
-const REFRESH_COOKIE = "holiyay_refresh"
-
+/**
+ * Register a new user with Supabase Auth.
+ * Session is automatically managed via cookies by @supabase/ssr.
+ */
 export async function registerAction(
 	name: string,
 	email: string,
 	password: string,
-) {
-	try {
-		const authResult = await authService.register({ name, email, password })
+): Promise<
+	ActionResponse<{ user: AuthUser; code?: "EMAIL_VERIFICATION_REQUIRED" }>
+> {
+	const supabase = await createClient()
 
-		if (authResult.tokens) {
-			const cookieStore = await cookies()
-			cookieStore.set({
-				name: COOKIE_NAME,
-				value: authResult.tokens.accessToken,
-				httpOnly: true,
-				secure: process.env.NODE_ENV === "production",
-				sameSite: "lax",
-				path: "/",
-				maxAge: authResult.tokens.expiresIn,
-			})
+	const { data, error } = await supabase.auth.signUp({
+		email,
+		password,
+		options: {
+			data: {
+				name,
+			},
+		},
+	})
 
-			if (authResult.tokens.refreshToken) {
-				cookieStore.set({
-					name: REFRESH_COOKIE,
-					value: authResult.tokens.refreshToken,
-					httpOnly: true,
-					secure: process.env.NODE_ENV === "production",
-					sameSite: "lax",
-					path: "/",
-					maxAge: 60 * 60 * 24 * 30,
-				})
-			}
-		}
-
-		if (authResult.tokens) {
-			return {
-				data: { user: authResult.user },
-				error: null,
-				headers: {},
-			}
-		}
-
-		return {
-			data: { user: authResult.user, code: "EMAIL_VERIFICATION_REQUIRED" },
-			error: null,
-			headers: {},
-		}
-	} catch (err) {
+	if (error) {
 		return {
 			data: null,
-			error: {
-				message: err instanceof Error ? err.message : "Registration failed",
-			},
-			headers: {},
+			error: { message: error.message, code: error.code },
 		}
+	}
+
+	if (!data.user) {
+		return {
+			data: null,
+			error: { message: "Registration failed: no user returned" },
+		}
+	}
+
+	const authUser: AuthUser = {
+		id: data.user.id,
+		email: data.user.email ?? email,
+		name: data.user.user_metadata?.name ?? name,
+		avatarUrl: data.user.user_metadata?.avatar_url ?? null,
+	}
+
+	// If no session returned, email confirmation is required
+	if (!data.session) {
+		return {
+			data: { user: authUser, code: "EMAIL_VERIFICATION_REQUIRED" },
+			error: null,
+		}
+	}
+
+	return {
+		data: { user: authUser },
+		error: null,
 	}
 }

@@ -1,0 +1,16 @@
+{
+	"language": "Language",
+	"theme": {
+		"label": "Theme",
+		"system": "Follow device settings",
+		"light": "Light",
+		"dark": "Dark"
+	},
+	"app_menu": {
+		"my_holiyay": "My Holiyay",
+		"account_settings": "Account settings",
+		"terms_of_service": "Terms of Service",
+		"privacy_policy": "Privacy policy",
+		"logout": "Logout"
+	}
+}

@@ -1,14 +1,12 @@
 "use server"
 
-import { cookies } from "next/headers"
-import type { WeatherRange } from "@/api/types"
-import api from "@/lib/api"
+import { type WeatherRange, weatherService } from "@/services/weather.service"
 
 /**
  * Server action: fetch weather for a location / date range.
  *
- * - Uses the user's session cookie (if present) to call the authenticated API.
- * - Throws when the API returns an error.
+ * - Calls the weather service directly (no HTTP layer).
+ * - Throws when the service returns an error.
  */
 export async function getWeatherAction(input: {
 	location: string
@@ -22,20 +20,10 @@ export async function getWeatherAction(input: {
 		throw new Error("Location is required")
 	}
 
-	const cookieStore = await cookies()
-	const token = cookieStore.get("holiyay_session")?.value || ""
-
-	const result = await api.weather.get(token, {
+	return await weatherService.getWeatherForRange({
 		location,
 		startDate,
 		endDate,
 		units,
 	})
-
-	if (result.error) {
-		// Keep behavior consistent with other actions: surface API error to caller
-		throw result.error
-	}
-
-	return result.data
 }

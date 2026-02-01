@@ -1,51 +1,47 @@
 "use server"
 
-import { cookies } from "next/headers"
-import { authService } from "@/api/services/auth.service"
-import type { AuthUser } from "@/api/types"
+import { createClient } from "@/lib/supabase/server"
+import type { ActionResponse, AuthUser } from "@/types"
 
-const COOKIE_NAME = "holiyay_session"
-const REFRESH_COOKIE = "holiyay_refresh"
+/**
+ * Log in a user with email and password using Supabase Auth.
+ * Session is automatically managed via cookies by @supabase/ssr.
+ */
+export async function loginAction(
+	email: string,
+	password: string,
+): Promise<ActionResponse<{ user: AuthUser }>> {
+	const supabase = await createClient()
 
-export async function loginAction(email: string, password: string) {
-	try {
-		const authResult = await authService.login({ email, password })
+	const { data, error } = await supabase.auth.signInWithPassword({
+		email,
+		password,
+	})
 
-		if (authResult.tokens) {
-			const cookieStore = await cookies()
-			cookieStore.set({
-				name: COOKIE_NAME,
-				value: authResult.tokens.accessToken,
-				httpOnly: true,
-				secure: process.env.NODE_ENV === "production",
-				sameSite: "strict",
-				path: "/",
-				maxAge: authResult.tokens.expiresIn,
-			})
-
-			if (authResult.tokens.refreshToken) {
-				cookieStore.set({
-					name: REFRESH_COOKIE,
-					value: authResult.tokens.refreshToken,
-					httpOnly: true,
-					secure: process.env.NODE_ENV === "production",
-					sameSite: "strict",
-					path: "/",
-					maxAge: 60 * 60 * 24 * 30, // 30 days
-				})
-			}
-		}
-
-		return {
-			data: { user: authResult.user } as { user: AuthUser },
-			error: null,
-			headers: {},
-		}
-	} catch (err) {
+	if (error) {
 		return {
 			data: null,
-			error: { message: err instanceof Error ? err.message : "Login failed" },
-			headers: {},
+			error: { message: error.message, code: error.code },
 		}
+	}
+
+	if (!data.user) {
+		return {
+			data: null,
+			error: { message: "Login failed: no user returned" },
+		}
+	}
+
+	return {
+		data: {
+			user: {
+				id: data.user.id,
+				email: data.user.email ?? email,
+				name:
+					data.user.user_metadata?.name ?? data.user.email?.split("@")[0] ?? "",
+				avatarUrl: data.user.user_metadata?.avatar_url ?? null,
+			},
+		},
+		error: null,
 	}
 }

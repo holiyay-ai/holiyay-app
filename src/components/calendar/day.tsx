@@ -1,6 +1,6 @@
 import { format, isToday } from "date-fns"
 import { PlusIcon } from "lucide-react"
-import type { ItemResponse } from "@/api/types"
+import type { ItemResponse } from "@/types"
 import { Button } from "../ui/button"
 import { CardContent } from "../ui/card"
 import { useCalendar } from "./calendar-context"

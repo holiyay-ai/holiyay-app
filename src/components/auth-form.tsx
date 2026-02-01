@@ -5,13 +5,13 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useTransition } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
-
 import { loginAction } from "@/actions/login-action"
 import { registerAction } from "@/actions/register-action"
-import { loginSchema, registerSchema } from "@/api/lib/schemas"
 import { GoogleIcon } from "@/assets/google-icon.svg"
 import { useAuth } from "@/lib/auth-context"
+import { loginSchema, registerSchema } from "@/lib/schemas"
 import { GridBackground } from "./grid-background"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card"
@@ -44,6 +44,8 @@ export function AuthForm({ type }: AuthFormProps) {
 }
 
 function SignInWithGoogleButton({ disabled }: { disabled?: boolean }) {
+	const { t } = useTranslation("auth")
+
 	function onClick() {
 		// Redirect to server-side OAuth endpoint which will forward to Supabase
 		window.location.assign(`/api/auth/oauth/google`)
@@ -55,15 +57,16 @@ function SignInWithGoogleButton({ disabled }: { disabled?: boolean }) {
 			className="w-full"
 			onClick={onClick}
 			disabled={disabled}
-			aria-label="Sign in with Google"
+			aria-label={t("login.sso_google")}
 		>
 			<GoogleIcon />
-			Sign in with Google
+			{t("login.sso_google")}
 		</Button>
 	)
 }
 
 function SignUpWithGoogleButton({ disabled }: { disabled?: boolean }) {
+	const { t } = useTranslation("auth")
 	function onClick() {
 		window.location.assign(`/api/auth/oauth/google`)
 	}
@@ -74,15 +77,16 @@ function SignUpWithGoogleButton({ disabled }: { disabled?: boolean }) {
 			className="w-full"
 			onClick={onClick}
 			disabled={disabled}
-			aria-label="Sign up with Google"
+			aria-label={t("register.sso_google")}
 		>
 			<GoogleIcon />
-			Sign up with Google
+			{t("register.sso_google")}
 		</Button>
 	)
 }
 
 function LoginForm() {
+	const { t } = useTranslation("auth")
 	const form = useForm({
 		defaultValues: {
 			email: "",
@@ -110,15 +114,15 @@ function LoginForm() {
 	return (
 		<Card className="min-w-[320px]">
 			<CardHeader>
-				<CardTitle>Login into Holiyay</CardTitle>
+				<CardTitle>{t("login.title")}</CardTitle>
 			</CardHeader>
 			<CardContent>
 				<SignInWithGoogleButton disabled={isPending} />
-				<Divider>Or</Divider>
+				<Divider>{t("or")}</Divider>
 				<form onSubmit={onSubmit}>
 					<FieldGroup>
 						<Field data-invalid={!!form.formState.errors.email}>
-							<FieldLabel htmlFor="email">Email</FieldLabel>
+							<FieldLabel htmlFor="email">{t("login.fields.email")}</FieldLabel>
 							<Input
 								type="email"
 								id="email"
@@ -129,7 +133,9 @@ function LoginForm() {
 							<FieldError>{form.formState.errors.email?.message}</FieldError>
 						</Field>
 						<Field data-invalid={!!form.formState.errors.password}>
-							<FieldLabel htmlFor="password">Password</FieldLabel>
+							<FieldLabel htmlFor="password">
+								{t("login.fields.password")}
+							</FieldLabel>
 							<Input
 								type="password"
 								id="password"
@@ -143,7 +149,7 @@ function LoginForm() {
 							<ForgotPasswordDialog disabled={isPending} />
 							<Button disabled={isPending} type="submit" className="grow">
 								{isPending && <Spinner />}
-								Login
+								{t("login.login")}
 							</Button>
 						</Field>
 					</FieldGroup>
@@ -152,7 +158,7 @@ function LoginForm() {
 			<CardFooter>
 				<Link href="/auth?type=register" passHref className="contents">
 					<Button variant="ghost" className="w-full" disabled={isPending}>
-						Create an account
+						{t("login.register_cta")}
 					</Button>
 				</Link>
 			</CardFooter>
@@ -161,6 +167,7 @@ function LoginForm() {
 }
 
 function RegisterForm() {
+	const { t } = useTranslation("auth")
 	const form = useForm({
 		defaultValues: {
 			email: "",
@@ -195,15 +202,17 @@ function RegisterForm() {
 	return (
 		<Card className="min-w-[320px]">
 			<CardHeader>
-				<CardTitle>Create an account for Holiyay</CardTitle>
+				<CardTitle>{t("register.title")}</CardTitle>
 			</CardHeader>
 			<CardContent>
 				<SignUpWithGoogleButton disabled={isPending} />
-				<Divider>Or</Divider>
+				<Divider>{t("or")}</Divider>
 				<form onSubmit={onSubmit}>
 					<FieldGroup>
 						<Field data-invalid={!!form.formState.errors.name}>
-							<FieldLabel htmlFor="name">Name</FieldLabel>
+							<FieldLabel htmlFor="name">
+								{t("register.fields.name")}
+							</FieldLabel>
 							<Input
 								type="text"
 								id="name"
@@ -214,7 +223,9 @@ function RegisterForm() {
 							<FieldError>{form.formState.errors.name?.message}</FieldError>
 						</Field>
 						<Field data-invalid={!!form.formState.errors.email}>
-							<FieldLabel htmlFor="email">Email</FieldLabel>
+							<FieldLabel htmlFor="email">
+								{t("register.fields.email")}
+							</FieldLabel>
 							<Input
 								type="email"
 								id="email"
@@ -225,7 +236,9 @@ function RegisterForm() {
 							<FieldError>{form.formState.errors.email?.message}</FieldError>
 						</Field>
 						<Field data-invalid={!!form.formState.errors.password}>
-							<FieldLabel htmlFor="password">Password</FieldLabel>
+							<FieldLabel htmlFor="password">
+								{t("register.fields.password")}
+							</FieldLabel>
 							<Input
 								type="password"
 								id="password"
@@ -238,7 +251,7 @@ function RegisterForm() {
 						<Field orientation="horizontal" className="w-full">
 							<Button type="submit" className="grow" disabled={isPending}>
 								{isPending && <Spinner />}
-								Create Account
+								{t("register.register")}
 							</Button>
 						</Field>
 					</FieldGroup>
@@ -247,7 +260,7 @@ function RegisterForm() {
 			<CardFooter>
 				<Link href="/auth?type=login" passHref className="contents">
 					<Button variant="ghost" className="w-full" disabled={isPending}>
-						Already have an account? Login
+						{t("register.login_cta")}
 					</Button>
 				</Link>
 			</CardFooter>
@@ -259,35 +272,37 @@ type ForgotPasswordDialogProps = {
 	disabled?: boolean
 }
 function ForgotPasswordDialog({ disabled }: ForgotPasswordDialogProps) {
+	const { t } = useTranslation("auth")
 	return (
 		<Dialog>
 			<DialogTrigger asChild>
 				<Button type="button" variant="secondary" disabled={disabled}>
-					Forgot Password?
+					{t("forgot_password.cta")}
 				</Button>
 			</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Reset your password</DialogTitle>
+					<DialogTitle>{t("forgot_password.title")}</DialogTitle>
 					<DialogDescription>
-						Enter your email address below and we'll send you a link to reset
-						your password.
+						{t("forgot_password.description")}
 					</DialogDescription>
 				</DialogHeader>
 				<FieldGroup>
 					<Field>
-						<FieldLabel htmlFor="email">Email</FieldLabel>
+						<FieldLabel htmlFor="email">
+							{t("forgot_password.fields.email")}
+						</FieldLabel>
 						<Input type="email" id="email" name="email" />
 					</Field>
 				</FieldGroup>
 				<DialogFooter>
 					<DialogClose asChild>
 						<Button variant="outline" type="button">
-							Cancel
+							{t("forgot_password.cancel")}
 						</Button>
 					</DialogClose>
 					<DialogClose asChild>
-						<Button type="button">Send reset email</Button>
+						<Button type="button">{t("forgot_password.submit")}</Button>
 					</DialogClose>
 				</DialogFooter>
 			</DialogContent>

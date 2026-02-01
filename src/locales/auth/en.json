@@ -1,0 +1,45 @@
+{
+	"disclaimer": "By signing in or signing up, you agree to our <0>Terms of Service</0> and <1>Privacy Policy</1>",
+	"or": "Or",
+	"login": {
+		"sso_google": "Sign in with Google",
+		"title": "Login into Holiyay",
+		"fields": {
+			"email": "Email",
+			"password": "Password"
+		},
+		"invalid": {
+			"email_required": "Email is required",
+			"password_required": "Password is required"
+		},
+		"login": "Login",
+		"register_cta": "Don't have an account? Sign up"
+	},
+	"register": {
+		"sso_google": "Sign up with Google",
+		"title": "Getting started",
+		"fields": {
+			"name": "Name",
+			"email": "Email",
+			"password": "Password"
+		},
+		"invalid": {
+			"name_required": "Name is required",
+			"email_required": "Email is required",
+			"password_required": "Password is required"
+		},
+		"register": "Begin using Holiyay",
+		"login_cta": "Already have an account? Login"
+	},
+	"forgot_password": {
+		"cta": "Forgot password?",
+		"title": "Reset your password",
+		"description": "Enter your email address below and we'll send you a link to reset your password.",
+		"fields": {
+			"email": "Email"
+		},
+		"invalid": { "email_required": "Email is required" },
+		"cancel": "Cancel",
+		"submit": "Send reset email"
+	}
+}

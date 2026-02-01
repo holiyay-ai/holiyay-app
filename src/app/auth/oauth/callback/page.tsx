@@ -1,57 +1,69 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
-import { toast } from "sonner"
-import api from "@/lib/api"
+import { useEffect, useState } from "react"
 import { useAuth } from "@/lib/auth-context"
+import { createClient } from "@/lib/supabase/client"
 
+/**
+ * OAuth Callback Page
+ *
+ * Handles OAuth redirects that come with hash fragments (implicit flow).
+ * For PKCE flow (recommended), use /auth/callback route handler instead.
+ */
 export default function OAuthCallbackPage() {
 	const router = useRouter()
 	const { refreshUser } = useAuth()
+	const [status, setStatus] = useState<"loading" | "error">("loading")
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: Only run once on mount
 	useEffect(() => {
-		;(async () => {
-			const hash = (window.location.hash || "").replace(/^#/, "")
-			const qs = new URLSearchParams(hash)
-			const accessToken = qs.get("access_token") ?? undefined
-			const refreshToken = qs.get("refresh_token") ?? undefined
-			const expiresIn = qs.get("expires_in")
-				? Number(qs.get("expires_in"))
-				: undefined
-
-			if (!accessToken) {
-				toast.error("Failed to parse authentication response")
-				router.replace("/auth?type=login")
-				return
-			}
-
+		// Only create client and handle callback on the client side
+		const handleCallback = async () => {
 			try {
-				const res = await api.auth.oauthCallback(
-					accessToken,
-					refreshToken,
-					expiresIn,
-				)
+				const supabase = createClient()
 
-				if (res.error) {
-					toast.error(res.error.message ?? "OAuth failed")
-					router.replace("/auth?type=login")
+				// Check if we have a session (Supabase client auto-detects from URL hash)
+				const {
+					data: { session },
+					error,
+				} = await supabase.auth.getSession()
+
+				if (error) {
+					console.error("OAuth callback error:", error.message)
+					setStatus("error")
+					router.replace("/auth/login?error=auth_callback_error")
 					return
 				}
 
-				await refreshUser()
-				router.replace("/")
-			} catch (_err) {
-				toast.error("OAuth failed")
-				router.replace("/auth?type=login")
+				if (session) {
+					// Successfully authenticated
+					await refreshUser()
+					router.replace("/")
+				} else {
+					// No session found, redirect to login
+					router.replace("/auth/login")
+				}
+			} catch (err) {
+				console.error("OAuth callback failed:", err)
+				setStatus("error")
+				router.replace("/auth/login?error=auth_callback_error")
 			}
-		})()
-	}, [router])
+		}
+
+		handleCallback()
+	}, [router, refreshUser])
 
 	return (
 		<div className="flex items-center justify-center min-h-screen">
-			Signing you in…
+			<div className="text-center">
+				{status === "loading" && (
+					<>
+						<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white mx-auto mb-4" />
+						<p>Signing you in…</p>
+					</>
+				)}
+				{status === "error" && <p>Authentication failed. Redirecting...</p>}
+			</div>
 		</div>
 	)
 }

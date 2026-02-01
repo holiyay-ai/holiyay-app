@@ -1,4 +1,4 @@
-import type { Calendar, CalendarWithItems, Item } from "@/api/types"
+import type { CalendarWithItems } from "@/types"
 
 export type ID = string
 /** Represents ISO date string: YYYY-MM-DD */

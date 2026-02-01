@@ -16,13 +16,13 @@ import { toast } from "sonner"
 import type z from "zod"
 import { getWeatherAction } from "@/actions/get-weather"
 import { postCalendarItemAction } from "@/actions/post-calendar-item"
+import { useApi } from "@/lib/hooks"
 import {
 	type createItemSchema,
 	createItemSchemaWithinRange,
-} from "@/api/lib/schemas"
-import type { CalendarWithItems } from "@/api/types"
-import { useApi } from "@/lib/hooks"
+} from "@/lib/schemas"
 import { cn } from "@/lib/utils"
+import type { CalendarWithItems } from "@/types"
 import { Button } from "../ui/button"
 import { Checkbox } from "../ui/checkbox"
 import { DatePickerInput } from "../ui/date-picker"
@@ -119,7 +119,7 @@ function CreateItemForm({
 	}, [onClose, resetForm.start])
 	const onSubmit = form.handleSubmit(async (data) => {
 		startTransition(async () => {
-			const result = await postCalendarItemAction(data, calendar.id)
+			const result = await postCalendarItemAction(calendar.id, data)
 			if (result.data) {
 				await onCreated(result.data.id)
 				handleClose()

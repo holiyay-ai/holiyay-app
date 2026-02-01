@@ -3,12 +3,12 @@
 /**
  * Auth Context Provider
  *
- * Manages authentication state on the client side.
+ * Manages authentication state on the client side using Supabase SSR.
  * Provides user info, loading state, and auth methods.
- * Works with HTTP-only cookies for secure session management.
+ * Session management is handled automatically by @supabase/ssr cookies.
  */
 
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
 	createContext,
 	type ReactNode,
@@ -16,9 +16,8 @@ import {
 	useEffect,
 	useState,
 } from "react"
-import type { AuthUser } from "@/api/types"
-import { getCurrentUser } from "../actions/get-current-user"
-import api from "./api"
+import { createClient } from "@/lib/supabase/client"
+import type { AuthUser } from "@/types"
 
 interface AuthContextValue {
 	user: AuthUser | null
@@ -32,19 +31,34 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
 	const pathname = usePathname()
+	const router = useRouter()
 	const [user, setUser] = useState<AuthUser | null>(null)
 	const [isLoading, setIsLoading] = useState(true)
 
-	const isOnCallbackRoute = pathname.endsWith("/auth/oauth/callback")
+	const supabase = createClient()
+
+	const isOnCallbackRoute = pathname.endsWith("/auth/callback")
 
 	const refreshUser = async () => {
 		try {
-			const user = await getCurrentUser()
-			if (!user) {
+			const {
+				data: { user: supabaseUser },
+			} = await supabase.auth.getUser()
+
+			if (!supabaseUser) {
 				setUser(null)
 				return
 			}
-			setUser(user)
+
+			setUser({
+				id: supabaseUser.id,
+				email: supabaseUser.email ?? "",
+				name:
+					supabaseUser.user_metadata?.name ??
+					supabaseUser.email?.split("@")[0] ??
+					"",
+				avatarUrl: supabaseUser.user_metadata?.avatar_url ?? null,
+			})
 		} catch (error) {
 			console.error("Failed to fetch user:", error)
 			setUser(null)
@@ -54,13 +68,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const logout = async () => {
 		try {
 			setUser(null)
-			await api.auth.logout()
+			await supabase.auth.signOut()
+			router.push("/auth?type=login")
 		} catch (error) {
 			console.error("Logout failed:", error)
 		}
 	}
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: Run once on mount
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Only run once on route change
 	useEffect(() => {
 		const initAuth = async () => {
 			setIsLoading(true)
@@ -68,7 +83,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			setIsLoading(false)
 		}
 
-		if (!isOnCallbackRoute) initAuth()
+		if (!isOnCallbackRoute) {
+			initAuth()
+		}
+
+		// Listen for auth state changes
+		const {
+			data: { subscription },
+		} = supabase.auth.onAuthStateChange(async (event, session) => {
+			if (event === "SIGNED_IN" && session?.user) {
+				setUser({
+					id: session.user.id,
+					email: session.user.email ?? "",
+					name:
+						session.user.user_metadata?.name ??
+						session.user.email?.split("@")[0] ??
+						"",
+					avatarUrl: session.user.user_metadata?.avatar_url ?? null,
+				})
+			} else if (event === "SIGNED_OUT") {
+				setUser(null)
+			}
+		})
+
+		return () => {
+			subscription.unsubscribe()
+		}
 	}, [isOnCallbackRoute])
 
 	const value: AuthContextValue = {

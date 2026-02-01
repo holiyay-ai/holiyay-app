@@ -6,8 +6,8 @@ import { useCallback, useEffect, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { postCalendarAction } from "@/actions/post-calendar"
-import { createCalendarSchema } from "@/api/lib/schemas"
 import { useMutableSearchParams } from "@/lib/hooks"
+import { createCalendarSchema } from "@/lib/schemas"
 import { Button } from "../ui/button"
 import {
 	Dialog,

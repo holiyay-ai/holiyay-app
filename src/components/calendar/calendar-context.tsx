@@ -5,9 +5,8 @@ import { createContext, type ReactNode, useContext, useState } from "react"
 import { toast } from "sonner"
 import { getCalendarAction } from "@/actions/get-calendar"
 import { getCalendarsAction } from "@/actions/get-calendars"
-import type { Item } from "@/api/types"
-import type { CalendarWithItems, CalendarWithRole } from "@/lib/api"
 import { useApi } from "@/lib/hooks"
+import type { CalendarWithItems, CalendarWithRole, ItemResponse } from "@/types"
 
 interface CalendarContextValue {
 	calendars: CalendarWithRole[]
@@ -42,11 +41,11 @@ type CreateItemModalProps = {
 }
 
 type UpdateItemModalProps = {
-	item?: Item
+	item?: ItemResponse
 }
 
 type DeleteItemModalProps = {
-	item?: Item
+	item?: ItemResponse
 }
 
 const CalendarContext = createContext<CalendarContextValue | undefined>(
@@ -56,16 +55,29 @@ const CalendarContext = createContext<CalendarContextValue | undefined>(
 export function CalendarProvider({ children }: CalendarProviderProps) {
 	const searchParams = useSearchParams()
 	const calendarId = searchParams.get("calendar_id") || undefined
-	const calendarsQuery = useApi("calendars", async () => {
-		return (await getCalendarsAction()).data
-	})
+	const calendarsQuery = useApi(
+		"calendars",
+		async () => {
+			const result = await getCalendarsAction()
+			if (result.error) {
+				throw result.error
+			}
+			return result.data
+		},
+		{
+			onError: (err) => {
+				toast.error(err.message)
+			},
+		},
+	)
 	const calendarQuery = useApi(
 		["calendar", calendarId],
 		async () => {
 			if (!calendarId || typeof calendarId !== "string") {
 				return null
 			}
-			return await getCalendarAction(calendarId)
+			const result = await getCalendarAction(calendarId)
+			return result.data
 		},
 		{
 			onError: (err) => {

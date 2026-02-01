@@ -1,0 +1,45 @@
+{
+	"disclaimer": "Ved å logge inn eller registrere deg godtar du våre <0>Vilkår for bruk</0> og <1>Personvernerklæring</1>",
+	"or": "Eller",
+	"login": {
+		"sso_google": "Logg inn med Google",
+		"title": "Logg inn på Holiyay",
+		"fields": {
+			"email": "E-post",
+			"password": "Passord"
+		},
+		"invalid": {
+			"email_required": "E-post er påkrevd",
+			"password_required": "Passord er påkrevd"
+		},
+		"login": "Logg inn",
+		"register_cta": "Har du ikke en konto? Registrer deg"
+	},
+	"register": {
+		"sso_google": "Registrer deg med Google",
+		"title": "Kom i gang",
+		"fields": {
+			"name": "Navn",
+			"email": "E-post",
+			"password": "Passord"
+		},
+		"invalid": {
+			"name_required": "Navn er påkrevd",
+			"email_required": "E-post er påkrevd",
+			"password_required": "Passord er påkrevd"
+		},
+		"register": "Begynn å bruke Holiyay",
+		"login_cta": "Har du allerede en konto? Logg inn"
+	},
+	"forgot_password": {
+		"cta": "Glemt passord?",
+		"title": "Tilbakestill passordet ditt",
+		"description": "Skriv inn e-postadressen din nedenfor, så sender vi deg en lenke for å tilbakestille passordet.",
+		"fields": {
+			"email": "E-post"
+		},
+		"invalid": { "email_required": "E-post er påkrevd" },
+		"cancel": "Avbryt",
+		"submit": "Send tilbakestillingslenke"
+	}
+}

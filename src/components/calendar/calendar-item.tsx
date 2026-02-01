@@ -2,7 +2,7 @@
 
 import { format } from "date-fns"
 import { useState } from "react"
-import type { ItemResponse } from "@/api/types"
+import type { ItemResponse } from "@/types"
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
 import { isAllDay } from "./helpers"
 import { useHoverPopover } from "./use-hover-popover"

@@ -1,19 +1,7 @@
 "use client"
 
-import Link from "next/link"
-import { ViewTransition } from "react"
-import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
-import { ModeToggle } from "./mode-toggle"
-import { Button } from "./ui/button"
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "./ui/dropdown-menu"
+import { AppMenu } from "./app-menu"
 
 type HeaderProps = {
 	children?: React.ReactNode
@@ -25,8 +13,6 @@ export function Header({
 	centerChildren,
 	position = "fixed",
 }: HeaderProps) {
-	const { user, isAuthenticated, logout } = useAuth()
-
 	return (
 		<header
 			className={cn(
@@ -47,37 +33,10 @@ export function Header({
 				{centerChildren}
 			</section>
 			<section
-				className="flex flex-row items-center justify-end flex-1 gap-2"
+				className="flex flex-row items-center justify-end flex-0 gap-2 sm:flex-1"
 				id="header-right"
 			>
-				{isAuthenticated && user && (
-					<ViewTransition>
-						<DropdownMenu modal={false}>
-							<DropdownMenuTrigger asChild>
-								<Button variant="outline" className="rounded-full">
-									{user.name}
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
-								<DropdownMenuLabel>My Account</DropdownMenuLabel>
-								<DropdownMenuSeparator />
-								<DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
-								<DropdownMenuSeparator />
-								<Link href="/terms" passHref>
-									<DropdownMenuItem>Terms of Service</DropdownMenuItem>
-								</Link>
-								<Link href="/privacy" passHref>
-									<DropdownMenuItem>Privacy policy</DropdownMenuItem>
-								</Link>
-								<DropdownMenuSeparator />
-								<DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					</ViewTransition>
-				)}
-				<ViewTransition>
-					<ModeToggle />
-				</ViewTransition>
+				<AppMenu />
 			</section>
 		</header>
 	)

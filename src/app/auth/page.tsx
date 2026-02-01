@@ -1,8 +1,8 @@
 import { cookies } from "next/headers"
-import Link from "next/link"
 import { redirect } from "next/navigation"
 import { ViewTransition } from "react"
 import { AuthForm } from "@/components/auth-form"
+import { Disclaimer } from "@/components/disclaimer"
 import { Header } from "@/components/header"
 
 export default async function AuthPage({
@@ -31,17 +31,7 @@ export default async function AuthPage({
 				<main className="flex flex-col items-center justify-center min-h-screen py-2">
 					<AuthForm type={type} />
 					<section className="pt-4 text-sm text-center text-neutral-600">
-						<p>
-							By signing in or signing up, you agree to our{" "}
-							<Link href="/terms" className="underline">
-								Terms of Service
-							</Link>{" "}
-							and{" "}
-							<Link href="/privacy" className="underline">
-								Privacy Policy
-							</Link>
-							.
-						</p>
+						<Disclaimer />
 					</section>
 				</main>
 			</ViewTransition>

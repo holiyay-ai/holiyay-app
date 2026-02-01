@@ -1,5 +1,5 @@
 // src/components/calendar/helpers.ts
-import type { ItemResponse } from "@/api/types"
+import type { ItemResponse } from "@/types"
 
 /**
  * Convert time string (HH:MM or HH:MM:SS) into minutes since midnight.

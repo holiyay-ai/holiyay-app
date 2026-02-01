@@ -5,6 +5,8 @@ import { QueryProvider } from "@/components/query-provider"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { AuthProvider } from "@/lib/auth-context"
+import { getLocaleFromServer, loadTranslations } from "@/lib/i18n/i18n"
+import I18nProvider from "@/lib/i18n/i18n-provider"
 
 const MiSans = localFont({
 	src: [
@@ -61,18 +63,23 @@ export const metadata: Metadata = {
 	description: "AI-assisted collaborative holiday planning",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: {
 	children: React.ReactNode
 }) {
+	const locale = await getLocaleFromServer()
+	const translations = await loadTranslations(locale)
+
 	return (
-		<html lang="en" className={MiSans.className} suppressHydrationWarning>
+		<html lang={locale} className={MiSans.className} suppressHydrationWarning>
 			<body>
 				<QueryProvider>
 					<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 						<AuthProvider>
-							{children}
+							<I18nProvider locale={locale} translations={translations}>
+								{children}
+							</I18nProvider>
 							<Toaster position="top-center" />
 						</AuthProvider>
 					</ThemeProvider>

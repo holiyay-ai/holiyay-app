@@ -1,0 +1,16 @@
+{
+	"language": "Språk",
+	"theme": {
+		"label": "Tema",
+		"system": "Følg enhetsinnstillinger",
+		"light": "Lys",
+		"dark": "Mørk"
+	},
+	"app_menu": {
+		"my_holiyay": "Min Holiyay",
+		"account_settings": "Kontoinnstillinger",
+		"terms_of_service": "Vilkår for bruk",
+		"privacy_policy": "Personvernerklæring",
+		"logout": "Logg ut"
+	}
+}
