@@ -2,7 +2,7 @@
 
 import { ChevronDownIcon } from "lucide-react"
 import Image from "next/image"
-import { useCallback, useTransition } from "react"
+import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import type { Locale } from "@/lib/i18n/i18n"
 import { useLocale } from "@/lib/i18n/use-locale"
@@ -84,16 +84,9 @@ function Twemoji({
 export function LanguageSelector() {
 	const { locale, setLocale } = useLocale()
 	const { t } = useTranslation()
-	const [isPending, startTransition] = useTransition()
-	// biome-ignore lint/correctness/useExhaustiveDependencies: Ignore isPending to prevent infinite loop
 	const handleChange = useCallback(
 		(locale: Locale) => {
-			if (isPending) return
-			startTransition(() => {
-				setTimeout(() => {
-					setLocale(locale)
-				}, 300)
-			})
+			setLocale(locale)
 		},
 		[setLocale],
 	)
@@ -111,7 +104,7 @@ export function LanguageSelector() {
 			<DropdownMenuPortal>
 				<DropdownMenuContent align="end">
 					<DropdownMenuItem
-						disabled={isPending}
+						onSelect={(e) => e.preventDefault()}
 						onClick={() => handleChange("en")}
 						className={cn(
 							locale === "en" && "bg-accent text-accent-foreground",
@@ -120,7 +113,7 @@ export function LanguageSelector() {
 						English
 					</DropdownMenuItem>
 					<DropdownMenuItem
-						disabled={isPending}
+						onSelect={(e) => e.preventDefault()}
 						onClick={() => handleChange("no")}
 						className={cn(
 							locale === "no" && "bg-accent text-accent-foreground",

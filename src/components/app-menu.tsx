@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { useTheme } from "next-themes"
-import { useCallback, useTransition, ViewTransition } from "react"
+import { useCallback, ViewTransition } from "react"
 import { useTranslation } from "react-i18next"
 import { useAuth } from "@/lib/auth-context"
 import type { Locale } from "@/lib/i18n/i18n"
@@ -134,16 +134,9 @@ function ThemeMenu() {
 function LanguageMenu() {
 	const { locale, setLocale } = useLocale()
 	const { t } = useTranslation()
-	const [isPending, startTransition] = useTransition()
-	// biome-ignore lint/correctness/useExhaustiveDependencies: Ignore isPending to prevent infinite loop
 	const handleChange = useCallback(
 		(locale: Locale) => {
-			if (isPending) return
-			startTransition(() => {
-				setTimeout(() => {
-					setLocale(locale)
-				}, 150)
-			})
+			setLocale(locale)
 		},
 		[setLocale],
 	)
@@ -153,7 +146,7 @@ function LanguageMenu() {
 			<DropdownMenuPortal>
 				<DropdownMenuSubContent>
 					<DropdownMenuItem
-						disabled={isPending}
+						onSelect={(e) => e.preventDefault()}
 						onClick={() => handleChange("en")}
 						className={cn(
 							locale === "en" && "bg-accent text-accent-foreground",
@@ -162,7 +155,7 @@ function LanguageMenu() {
 						English
 					</DropdownMenuItem>
 					<DropdownMenuItem
-						disabled={isPending}
+						onSelect={(e) => e.preventDefault()}
 						onClick={() => handleChange("no")}
 						className={cn(
 							locale === "no" && "bg-accent text-accent-foreground",
