@@ -3,9 +3,9 @@
 import dynamic from "next/dynamic"
 import Link from "next/link"
 import { Suspense, ViewTransition } from "react"
-import { Header } from "@/components/header"
 import { useAuth } from "@/lib/auth-context"
 import { Landing } from "./landing"
+import { Portal } from "./ui/portal"
 import { Spinner } from "./ui/spinner"
 
 const Calendar = dynamic(() => import("./calendar/calendar"), {
@@ -35,13 +35,13 @@ export function Home() {
 function HomePageContent() {
 	return (
 		<>
-			<Header position="sticky">
+			<Portal target="#header-left">
 				<ViewTransition>
 					<Link href="/" className="text-lg font-semibold">
 						Holiyay
 					</Link>
 				</ViewTransition>
-			</Header>
+			</Portal>
 			<ViewTransition>
 				<main className="flex flex-col items-center justify-start py-2 px-4 flex-1">
 					<Suspense fallback={<Spinner />}>

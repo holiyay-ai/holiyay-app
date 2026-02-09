@@ -1,6 +1,7 @@
 "use client"
 
 import { CalendarIcon, PlaneIcon, Plus } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Button } from "../ui/button"
 import {
 	DropdownMenu,
@@ -25,6 +26,7 @@ export function Controls() {
 		},
 		loading,
 	} = useCalendar()
+	const { t } = useTranslation()
 
 	return (
 		<>
@@ -48,7 +50,7 @@ export function Controls() {
 					<Input
 						disabled={loading.calendars}
 						className="w-full flex-1"
-						placeholder="Search in your agenda"
+						placeholder={t("calendar:placeholders.search")}
 					/>
 				</div>
 			</Portal>
@@ -70,21 +72,21 @@ export function Controls() {
 
 					<DropdownMenuContent align="center">
 						<DropdownMenuLabel className="font-semibold text-xs opacity-50">
-							Create new...
+							{t("calendar:labels.create")}
 						</DropdownMenuLabel>
 						<DropdownMenuItem
 							onClick={() => setCreateCalendarModalOpen(true)}
 							disabled={createCalendarModalOpen}
 						>
 							<PlaneIcon />
-							Plan
+							{t("calendar:actions.plan")}
 						</DropdownMenuItem>
 						<DropdownMenuItem
 							onClick={() => setCreateItemModalOpen({})}
 							disabled={!calendar || !!createItemModalOpen}
 						>
 							<CalendarIcon />
-							Event
+							{t("calendar:actions.event")}
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>

@@ -16,6 +16,7 @@ import {
 	startOfWeek,
 } from "date-fns"
 import { CalendarIcon } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import {
 	Empty,
 	EmptyDescription,
@@ -31,6 +32,7 @@ import { MorePopover } from "./more-popover"
 
 export function CalendarView() {
 	const { calendar } = useCalendar()
+	const { t } = useTranslation()
 	if (!calendar) {
 		return (
 			<Empty>
@@ -38,8 +40,10 @@ export function CalendarView() {
 					<EmptyMedia variant="icon">
 						<CalendarIcon />
 					</EmptyMedia>
-					<EmptyTitle>Plan not found</EmptyTitle>
-					<EmptyDescription>This plan does not exist.</EmptyDescription>
+					<EmptyTitle>{t("calendar:labels.plan_not_found")}</EmptyTitle>
+					<EmptyDescription>
+						{t("calendar:bodies.plan_not_found")}
+					</EmptyDescription>
 				</EmptyHeader>
 			</Empty>
 		)

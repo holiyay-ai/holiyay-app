@@ -1,0 +1,77 @@
+{
+	"actions": {
+		"plan": "Plan",
+		"event": "Hendelse",
+		"create_first_plan": "Opprett din første plan",
+		"open": "Åpne",
+		"more": "+{{count}} til"
+	},
+	"labels": {
+		"create": "Opprett ny...",
+		"no_plans_found": "Ingen planer funnet!",
+		"plan_not_found": "Planen ble ikke funnet!",
+		"create_item": "Opprett ny hendelse",
+		"create_item_on": "Opprett hendelse den {{date}}",
+		"all_day": "Hele dagen"
+	},
+	"bodies": {
+		"no_plans_found": "Du har ingen planer ennå. Begynn med å opprette en!",
+		"plan_not_found": "Planen du leter etter finnes ikke eller er blitt slettet.",
+		"create_item_description": "Fyll inn detaljene nedenfor for å legge til en ny hendelse i planen din."
+	},
+	"fields": {
+		"created_by": "Opprettet av <0></0>"
+	},
+	"placeholders": {
+		"search": "Søk i kalenderen din"
+	},
+	"create_item": {
+		"actions": {
+			"create_event": "Opprett hendelse",
+			"cancel": "Avbryt"
+		},
+		"labels": {
+			"checklist": "Sjekkliste"
+		},
+		"fields": {
+			"title": "Tittel",
+			"location": "Sted",
+			"start_date": "Startdato",
+			"end_date": "Sluttdato",
+			"all_day": "Hele dagen",
+			"description": "Beskrivelse",
+			"start_time": "Starttid",
+			"end_time": "Sluttid",
+			"same_date": "Slutter samme dag"
+		},
+		"descriptions": {
+			"title": "Navn på hendelsen",
+			"location": "Hvor finner hendelsen sted?",
+			"description": "Flere detaljer om hendelsen"
+		}
+	},
+	"create_plan": {
+		"actions": {
+			"create_plan": "Opprett plan",
+			"cancel": "Avbryt"
+		},
+		"labels": {
+			"create_new_plan": "Opprett ny plan"
+		},
+		"bodies": {
+			"create_new_plan": "Fyll inn detaljene nedenfor for å opprette en ny plan."
+		},
+		"fields": {
+			"name": "Navn",
+			"start_date": "Startdato",
+			"end_date": "Sluttdato",
+			"destination": "Destinasjon"
+		},
+		"descriptions": {
+			"name": "Gi planen et navn slik at du enkelt kan finne den igjen senere",
+			"start_date": "Når starter planen din?",
+			"end_date": "Når slutter planen din?",
+			"destination": "Hvor skal du?"
+		}
+	}
+}

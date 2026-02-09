@@ -2,6 +2,7 @@
 
 import { differenceInCalendarDays, format, formatRelative } from "date-fns"
 import { PlaneIcon } from "lucide-react"
+import { Trans, useTranslation } from "react-i18next"
 import { useMutableSearchParams } from "@/lib/hooks"
 import { Button } from "../ui/button"
 import {
@@ -19,6 +20,7 @@ import { useCalendar } from "./calendar-context"
 export function CalendarList() {
 	const { calendars, loading } = useCalendar()
 	const { updateSearchParams } = useMutableSearchParams()
+	const { t } = useTranslation()
 
 	if (loading.calendars) {
 		return <Spinner />
@@ -53,9 +55,13 @@ export function CalendarList() {
 					</CardContent>
 					<CardFooter className="flex justify-between">
 						<div className="flex flex-col self-end">
-							<div className="flex items-center gap-2 text-xs text-muted-foreground">
-								Created by <UserName id={calendar.ownerId} />
-							</div>
+							<Trans
+								i18nKey="fields.created_by"
+								ns="calendar"
+								className="flex items-center gap-2 text-xs text-muted-foreground"
+							>
+								<UserName id={calendar.ownerId} />
+							</Trans>
 							<p className="flex items-center gap-2 text-xs text-muted-foreground">
 								{formatRelative(calendar.createdAt, new Date())}
 							</p>
@@ -63,7 +69,7 @@ export function CalendarList() {
 						<Button
 							onClick={() => updateSearchParams("calendar_id", calendar.id)}
 						>
-							Open
+							{t("calendar:actions.open")}
 						</Button>
 					</CardFooter>
 				</Card>

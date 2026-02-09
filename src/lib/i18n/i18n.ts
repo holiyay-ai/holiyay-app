@@ -27,7 +27,14 @@ export async function getLocaleFromServer(): Promise<Locale> {
 
 export async function loadTranslations(
 	locale: Locale,
-	namespaces: string[] = ["common", "landing", "auth", "terms", "privacy"],
+	namespaces: string[] = [
+		"common",
+		"landing",
+		"auth",
+		"terms",
+		"privacy",
+		"calendar",
+	],
 ) {
 	const res: Record<string, any> = {}
 	for (const namespace of namespaces) {

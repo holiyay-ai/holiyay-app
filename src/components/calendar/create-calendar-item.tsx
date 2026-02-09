@@ -1,7 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useTimeout } from "@mantine/hooks"
+import { useMediaQuery, useTimeout } from "@mantine/hooks"
 import { format } from "date-fns"
 import { SparklesIcon } from "lucide-react"
 import { useCallback, useEffect, useTransition } from "react"
@@ -12,6 +12,7 @@ import {
 	useFormContext,
 	useWatch,
 } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import type z from "zod"
 import { getWeatherAction } from "@/actions/get-weather"
@@ -27,14 +28,14 @@ import { Button } from "../ui/button"
 import { Checkbox } from "../ui/checkbox"
 import { DatePickerInput } from "../ui/date-picker"
 import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "../ui/dialog"
+	Drawer,
+	DrawerClose,
+	DrawerContent,
+	DrawerDescription,
+	DrawerFooter,
+	DrawerHeader,
+	DrawerTitle,
+} from "../ui/drawer"
 import {
 	Field,
 	FieldDescription,
@@ -57,9 +58,10 @@ export function CreateItemModal() {
 		modals: { createItemModalOpen, setCreateItemModalOpen },
 		refreshCalendar,
 	} = useCalendar()
+	const isMobile = useMediaQuery("(max-width: 768px)")
 	if (!calendar) return null
 	return (
-		<Dialog
+		<Drawer
 			open={!!createItemModalOpen}
 			onOpenChange={(open) => {
 				if (open) {
@@ -68,6 +70,7 @@ export function CreateItemModal() {
 					setCreateItemModalOpen(null)
 				}
 			}}
+			direction={isMobile ? "bottom" : "right"}
 		>
 			<CreateItemForm
 				onClose={() => setCreateItemModalOpen(null)}
@@ -78,7 +81,7 @@ export function CreateItemModal() {
 				startDate={createItemModalOpen?.startDate}
 				isOpen={!!createItemModalOpen}
 			/>
-		</Dialog>
+		</Drawer>
 	)
 }
 
@@ -96,6 +99,7 @@ function CreateItemForm({
 	startDate,
 	isOpen,
 }: CreateItemFormProps) {
+	const { t } = useTranslation()
 	const form = useForm({
 		defaultValues: {
 			startDate: startDate || "",
@@ -141,202 +145,228 @@ function CreateItemForm({
 	}, [isOpen, startDate, form, resetForm.clear, resetForm.start])
 	return (
 		<FormProvider {...form}>
-			<DialogContent>
+			<DrawerContent>
 				<form className="contents" onSubmit={onSubmit}>
-					<DialogHeader>
+					<DrawerHeader>
 						<WatchedDialogTitle />
-						<DialogDescription>
-							Fill in the details below to create a new event to your plan.
-						</DialogDescription>
-						<DialogClose type="button" onClick={onClose} />
-					</DialogHeader>
-					<FieldGroup>
-						<Field data-invalid={!!form.formState.errors.title}>
-							<FieldLabel htmlFor="title">Title</FieldLabel>
-							<FieldDescription>Name of the event</FieldDescription>
-							<Input
-								type="text"
-								id="title"
-								{...form.register("title")}
-								aria-invalid={!!form.formState.errors.title}
-								disabled={isPending}
-							/>
-							<FieldError>{form.formState.errors.title?.message}</FieldError>
-						</Field>
-						<Field data-invalid={!!form.formState.errors.location}>
-							<FieldLabel htmlFor="location">Location</FieldLabel>
-							<FieldDescription>
-								Where is the event taking place?
-							</FieldDescription>
-							<Input
-								type="text"
-								id="location"
-								{...form.register("location")}
-								aria-invalid={!!form.formState.errors.location}
-								disabled={isPending}
-							/>
-							<FieldError>{form.formState.errors.location?.message}</FieldError>
-						</Field>
-						<section className="flex flex-row gap-2 items-start">
-							<Field data-invalid={!!form.formState.errors.startTime}>
-								<FieldLabel htmlFor="startTime">Start time</FieldLabel>
+						<DrawerDescription>
+							{t("calendar:bodies.create_item_description")}
+						</DrawerDescription>
+						<DrawerClose type="button" onClick={onClose} />
+					</DrawerHeader>
+					<div className="no-scrollbar overflow-y-auto px-4 flex flex-col w-full gap-4">
+						<FieldGroup>
+							<Field data-invalid={!!form.formState.errors.title}>
+								<FieldLabel htmlFor="title">
+									{t("calendar:create_item.fields.title")}
+								</FieldLabel>
+								<FieldDescription>
+									{t("calendar:create_item.descriptions.title")}
+								</FieldDescription>
 								<Input
 									type="text"
-									id="startTime"
-									{...form.register("startTime")}
-									aria-invalid={!!form.formState.errors.startTime}
+									id="title"
+									{...form.register("title")}
+									aria-invalid={!!form.formState.errors.title}
+									disabled={isPending}
+								/>
+								<FieldError>{form.formState.errors.title?.message}</FieldError>
+							</Field>
+							<Field data-invalid={!!form.formState.errors.location}>
+								<FieldLabel htmlFor="location">
+									{t("calendar:create_item.fields.location")}
+								</FieldLabel>
+								<FieldDescription>
+									{t("calendar:create_item.descriptions.location")}
+								</FieldDescription>
+								<Input
+									type="text"
+									id="location"
+									{...form.register("location")}
+									aria-invalid={!!form.formState.errors.location}
 									disabled={isPending}
 								/>
 								<FieldError>
-									{form.formState.errors.startTime?.message}
+									{form.formState.errors.location?.message}
 								</FieldError>
 							</Field>
-							<Field data-invalid={!!form.formState.errors.endTime}>
-								<FieldLabel htmlFor="endTime">End time</FieldLabel>
-								<Input
-									type="text"
-									id="endTime"
-									{...form.register("endTime")}
-									aria-invalid={!!form.formState.errors.endTime}
+							<section className="flex flex-row gap-2 items-start">
+								<Field data-invalid={!!form.formState.errors.startTime}>
+									<FieldLabel htmlFor="startTime">
+										{t("calendar:create_item.fields.start_time")}
+									</FieldLabel>
+									<Input
+										type="text"
+										id="startTime"
+										{...form.register("startTime")}
+										aria-invalid={!!form.formState.errors.startTime}
+										disabled={isPending}
+									/>
+									<FieldError>
+										{form.formState.errors.startTime?.message}
+									</FieldError>
+								</Field>
+								<Field data-invalid={!!form.formState.errors.endTime}>
+									<FieldLabel htmlFor="endTime">
+										{t("calendar:create_item.fields.end_time")}
+									</FieldLabel>
+									<Input
+										type="text"
+										id="endTime"
+										{...form.register("endTime")}
+										aria-invalid={!!form.formState.errors.endTime}
+										disabled={isPending}
+									/>
+									<FieldError>
+										{form.formState.errors.endTime?.message}
+									</FieldError>
+								</Field>
+							</section>
+							<div className="flex items-center min-w-[100px] gap-2">
+								<Checkbox
+									id="allDay"
+									disabled={isPending}
+									onCheckedChange={(checked) => {
+										if (checked) {
+											form.setValue("startTime", "00:00", {
+												shouldValidate: true,
+											})
+											form.setValue("endTime", "23:59", {
+												shouldValidate: true,
+											})
+										} else {
+											form.setValue("startTime", "")
+											form.setValue("endTime", "")
+										}
+									}}
+									checked={
+										form.watch("startTime") === "00:00" &&
+										form.watch("endTime") === "23:59"
+									}
+								/>
+								<Label htmlFor="allDay">
+									{t("calendar:create_item.fields.all_day")}
+								</Label>
+							</div>
+							<section className="flex flex-row gap-2 items-start">
+								<Field data-invalid={!!form.formState.errors.startDate}>
+									<FieldLabel htmlFor="startDate">
+										{t("calendar:create_item.fields.start_date")}
+									</FieldLabel>
+									<Controller
+										name="startDate"
+										render={({ field }) => (
+											<DatePickerInput
+												id="startDate"
+												value={field.value}
+												onChange={field.onChange}
+												aria-invalid={!!form.formState.errors.startDate}
+												disabled={isPending}
+											/>
+										)}
+									/>
+									<FieldError>
+										{form.formState.errors.startDate?.message}
+									</FieldError>
+								</Field>
+								<Field data-invalid={!!form.formState.errors.endDate}>
+									<FieldLabel htmlFor="endDate">
+										{t("calendar:create_item.fields.end_date")}
+									</FieldLabel>
+									<Controller
+										name="endDate"
+										render={({ field }) => (
+											<DatePickerInput
+												id="endDate"
+												value={field.value}
+												onChange={field.onChange}
+												aria-invalid={!!form.formState.errors.endDate}
+												disabled={isPending}
+											/>
+										)}
+									/>
+									<FieldError>
+										{form.formState.errors.endDate?.message}
+									</FieldError>
+								</Field>
+							</section>
+							<div className="flex items-center min-w-[100px] gap-2">
+								<Checkbox
+									id="sameDate"
+									disabled={isPending}
+									onCheckedChange={(checked) => {
+										if (checked) {
+											form.setValue("endDate", form.watch("startDate"))
+										} else {
+											form.setValue("endDate", "")
+										}
+									}}
+									checked={form.watch("startDate") === form.watch("endDate")}
+								/>
+								<Label htmlFor="sameDate">
+									{t("calendar:create_item.fields.same_date")}
+								</Label>
+							</div>
+							<Field data-invalid={!!form.formState.errors.description}>
+								<FieldLabel htmlFor="description">
+									{t("calendar:create_item.fields.description")}
+								</FieldLabel>
+								<FieldDescription>
+									{t("calendar:create_item.descriptions.description")}
+								</FieldDescription>
+								<Textarea
+									id="description"
+									{...form.register("description")}
+									aria-invalid={!!form.formState.errors.description}
 									disabled={isPending}
 								/>
 								<FieldError>
-									{form.formState.errors.endTime?.message}
+									{form.formState.errors.description?.message}
 								</FieldError>
 							</Field>
-						</section>
-						<div className="flex items-center min-w-[100px] gap-2">
-							<Checkbox
-								id="allDay"
-								disabled={isPending}
-								onCheckedChange={(checked) => {
-									if (checked) {
-										form.setValue("startTime", "00:00", {
-											shouldValidate: true,
-										})
-										form.setValue("endTime", "23:59", {
-											shouldValidate: true,
-										})
-									} else {
-										form.setValue("startTime", "")
-										form.setValue("endTime", "")
-									}
-								}}
-								checked={
-									form.watch("startTime") === "00:00" &&
-									form.watch("endTime") === "23:59"
-								}
-							/>
-							<Label htmlFor="allDay">All day</Label>
-						</div>
-						<section className="flex flex-row gap-2 items-start">
-							<Field data-invalid={!!form.formState.errors.startDate}>
-								<FieldLabel htmlFor="startDate">Start date</FieldLabel>
-								<Controller
-									name="startDate"
-									render={({ field }) => (
-										<DatePickerInput
-											id="startDate"
-											value={field.value}
-											onChange={field.onChange}
-											aria-invalid={!!form.formState.errors.startDate}
-											disabled={isPending}
-										/>
-									)}
-								/>
-								<FieldError>
-									{form.formState.errors.startDate?.message}
-								</FieldError>
-							</Field>
-							<Field data-invalid={!!form.formState.errors.endDate}>
-								<FieldLabel htmlFor="endDate"> End date</FieldLabel>
-								<Controller
-									name="endDate"
-									render={({ field }) => (
-										<DatePickerInput
-											id="endDate"
-											value={field.value}
-											onChange={field.onChange}
-											aria-invalid={!!form.formState.errors.endDate}
-											disabled={isPending}
-										/>
-									)}
-								/>
-								<FieldError>
-									{form.formState.errors.endDate?.message}
-								</FieldError>
-							</Field>
-						</section>
-						<div className="flex items-center min-w-[100px] gap-2">
-							<Checkbox
-								id="sameDate"
-								disabled={isPending}
-								onCheckedChange={(checked) => {
-									if (checked) {
-										form.setValue("endDate", form.watch("startDate"))
-									} else {
-										form.setValue("endDate", "")
-									}
-								}}
-								checked={form.watch("startDate") === form.watch("endDate")}
-							/>
-							<Label htmlFor="sameDate">Ends same day</Label>
-						</div>
-						<Field data-invalid={!!form.formState.errors.description}>
-							<FieldLabel htmlFor="description">
-								Description (optional)
-							</FieldLabel>
-							<FieldDescription>
-								Short description of the event
-							</FieldDescription>
-							<Textarea
-								id="description"
-								{...form.register("description")}
-								aria-invalid={!!form.formState.errors.description}
-								disabled={isPending}
-							/>
-							<FieldError>
-								{form.formState.errors.description?.message}
-							</FieldError>
-						</Field>
-					</FieldGroup>
-					{/*<WeatherReport />*/}
-					<Separator />
-					<ChecklistHandler />
-					<DialogFooter>
+						</FieldGroup>
+						{/*<WeatherReport />*/}
+						<Separator />
+						<ChecklistHandler />
+					</div>
+					<DrawerFooter>
+						<Button
+							type="submit"
+							disabled={isPending || !form.formState.isValid}
+						>
+							{isPending && <Spinner />}
+							{t("calendar:create_item.actions.create_event")}
+						</Button>
 						<Button
 							type="button"
 							variant="outline"
 							onClick={onClose}
 							disabled={isPending}
 						>
-							Cancel
+							{t("calendar:create_item.actions.cancel")}
 						</Button>
-						<Button
-							type="submit"
-							disabled={isPending || !form.formState.isValid}
-						>
-							{isPending && <Spinner />}
-							Create
-						</Button>
-					</DialogFooter>
+					</DrawerFooter>
 				</form>
-			</DialogContent>
+			</DrawerContent>
 		</FormProvider>
 	)
 }
 
 function WatchedDialogTitle() {
+	const { t } = useTranslation()
 	const startDate = useWatch<CreateItemFormType>({ name: "startDate" })
 	return (
-		<DialogTitle>
-			Create a new event
-			{startDate ? ` on ${format(startDate, "dd MMM yyyy")}` : ""}
-		</DialogTitle>
+		<DrawerTitle>
+			{t("calendar:labels.create_item", {
+				date: startDate ? format(new Date(startDate), "dd MMM yyyy") : "",
+				context: startDate ? "on" : "",
+			})}
+		</DrawerTitle>
 	)
 }
 
 function ChecklistHandler() {
+	const { t } = useTranslation()
 	const _form = useFormContext<CreateItemFormType>()
 	const [isPending, startTransition] = useTransition()
 	const handleGenerateItems = useCallback(() => {
@@ -346,7 +376,7 @@ function ChecklistHandler() {
 	return (
 		<section inert={isPending} className={cn(isPending && "opacity-50")}>
 			<div className="flex flex-row justify-between gap-2">
-				<h4>Checklist</h4>
+				<h4>{t("calendar:create_item.labels.checklist")}</h4>
 				<Button variant="outline" onClick={handleGenerateItems} type="button">
 					<SparklesIcon />
 				</Button>

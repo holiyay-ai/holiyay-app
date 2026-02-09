@@ -10,31 +10,32 @@ type Props = {
 	children: React.ReactNode
 }
 
+function initI18n(
+	locale: string,
+	translations: Record<string, Record<string, string>>,
+) {
+	if (!i18next.isInitialized) {
+		i18next.use(initReactI18next).init({
+			resources: { [locale]: translations },
+			lng: locale,
+			fallbackLng: "en",
+			interpolation: { escapeValue: false },
+			react: { useSuspense: false },
+		})
+	}
+}
+
 export default function I18nProvider({
 	locale,
 	translations,
 	children,
 }: Props) {
-	useEffect(() => {
-		// init once
-		if (!i18next.isInitialized) {
-			i18next.use(initReactI18next).init({
-				resources: { [locale]: translations },
-				lng: locale,
-				fallbackLng: "en",
-				interpolation: { escapeValue: false },
-				react: { useSuspense: false },
-			})
-			return
-		}
+	initI18n(locale, translations)
 
-		// subsequent locale changes: add bundles and change language
+	// Handle subsequent locale changes in useEffect
+	useEffect(() => {
 		Object.entries(translations).forEach(([ns, msgs]) => {
-			if (!i18next.hasResourceBundle(locale, ns)) {
-				i18next.addResourceBundle(locale, ns, msgs, true, true)
-			} else {
-				i18next.addResourceBundle(locale, ns, msgs, true, true)
-			}
+			i18next.addResourceBundle(locale, ns, msgs, true, true)
 		})
 		i18next.changeLanguage(locale)
 	}, [locale, translations])

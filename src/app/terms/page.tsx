@@ -1,15 +1,17 @@
 import Link from "next/link"
 import { ViewTransition } from "react"
-import { Header } from "@/components/header"
+import { Portal } from "@/components/ui/portal"
 
 export default function TermsPage() {
 	return (
 		<>
-			<Header>
-				<Link href="/" className="text-lg font-semibold">
-					Holiyay
-				</Link>
-			</Header>
+			<Portal target="#header-left">
+				<ViewTransition>
+					<Link href="/" className="text-lg font-semibold">
+						Holiyay
+					</Link>
+				</ViewTransition>
+			</Portal>
 			<ViewTransition>
 				<main className="flex flex-col items-center justify-center py-2 px-4">
 					<section className="max-w-3xl mt-20 mb-20">

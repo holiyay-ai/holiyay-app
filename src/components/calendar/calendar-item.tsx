@@ -2,6 +2,7 @@
 
 import { format } from "date-fns"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import type { ItemResponse } from "@/types"
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
 import { isAllDay } from "./helpers"
@@ -14,6 +15,7 @@ export function CalendarItem({
 	item: ItemResponse
 	date?: Date
 }) {
+	const { t } = useTranslation()
 	const { open, setOpen, openPopover, closePopoverDelayed } =
 		useHoverPopover(1000)
 	const [pinned, setPinned] = useState(false)
@@ -99,10 +101,10 @@ export function CalendarItem({
 				<div className="text-sm font-medium">{item.title}</div>
 				<div className="text-xs text-neutral-500">
 					{isAllDay(item)
-						? "All day"
+						? t("calendar:labels.all_day")
 						: item.startTime
 							? `${item.startTime}${item.endTime ? ` — ${item.endTime}` : ""}`
-							: "All day"}
+							: t("calendar:labels.all_day")}
 				</div>
 				{item.description && (
 					<div className="mt-2 text-sm whitespace-pre-line">

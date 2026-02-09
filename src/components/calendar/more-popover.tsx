@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import type { ItemResponse } from "@/types"
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
 import { isAllDay } from "./helpers"
@@ -18,6 +19,7 @@ export function MorePopover({
 	items: ItemResponse[]
 	delay?: number
 }) {
+	const { t } = useTranslation()
 	const { open, setOpen, openPopover, closePopoverDelayed } =
 		useHoverPopover(delay)
 	const [pinned, setPinned] = useState(false)
@@ -52,7 +54,7 @@ export function MorePopover({
 					onClick={onTriggerClick}
 					className="text-xs text-neutral-500"
 				>
-					+{items.length} more
+					{t("calendar:actions.more", { count: items.length })}
 				</button>
 			</PopoverTrigger>
 			<PopoverContent
@@ -67,10 +69,10 @@ export function MorePopover({
 								<div className="font-medium text-sm">{it.title}</div>
 								<div className="text-xs text-neutral-500 self-start">
 									{isAllDay(it)
-										? "All day"
+										? t("calendar:labels.all_day")
 										: it.startTime
 											? `${it.startTime}${it.endTime ? ` — ${it.endTime}` : ""}`
-											: "All day"}
+											: t("calendar:labels.all_day")}
 								</div>
 							</div>
 							{it.description && (

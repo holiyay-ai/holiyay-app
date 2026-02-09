@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import "./globals.css"
 import localFont from "next/font/local"
+import { HeaderProvider } from "@/components/header-provider"
 import { QueryProvider } from "@/components/query-provider"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
@@ -78,7 +79,7 @@ export default async function RootLayout({
 					<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 						<AuthProvider>
 							<I18nProvider locale={locale} translations={translations}>
-								{children}
+								<HeaderProvider>{children}</HeaderProvider>
 							</I18nProvider>
 							<Toaster position="top-center" />
 						</AuthProvider>

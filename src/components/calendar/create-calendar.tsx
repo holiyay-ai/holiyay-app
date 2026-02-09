@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useTimeout } from "@mantine/hooks"
 import { useCallback, useEffect, useTransition } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import { postCalendarAction } from "@/actions/post-calendar"
 import { useMutableSearchParams } from "@/lib/hooks"
@@ -60,6 +61,7 @@ function CreateCalendarForm({
 	onCreated,
 	isOpen,
 }: CreateCalendarFormProps) {
+	const { t } = useTranslation()
 	const form = useForm({
 		defaultValues: {
 			name: "",
@@ -97,17 +99,21 @@ function CreateCalendarForm({
 		<DialogContent>
 			<form className="contents" onSubmit={onSubmit}>
 				<DialogHeader>
-					<DialogTitle>Create a new plan</DialogTitle>
+					<DialogTitle>
+						{t("calendar:create_plan.labels.create_new_plan")}
+					</DialogTitle>
 					<DialogDescription>
-						Fill in the details below to create your new plan.
+						{t("calendar:create_plan.bodies.create_new_plan")}
 					</DialogDescription>
 					<DialogClose type="button" onClick={onClose} />
 				</DialogHeader>
 				<FieldGroup>
 					<Field data-invalid={!!form.formState.errors.name}>
-						<FieldLabel htmlFor="name">Name</FieldLabel>
+						<FieldLabel htmlFor="name">
+							{t("calendar:create_plan.fields.name")}
+						</FieldLabel>
 						<FieldDescription>
-							Give your trip a name to easily identify it
+							{t("calendar:create_plan.descriptions.name")}
 						</FieldDescription>
 						<Input
 							type="text"
@@ -120,8 +126,12 @@ function CreateCalendarForm({
 					</Field>
 					<section className="flex flex-row gap-2 items-start">
 						<Field data-invalid={!!form.formState.errors.startDate}>
-							<FieldLabel htmlFor="startDate">Start date</FieldLabel>
-							<FieldDescription>The first day of your trip</FieldDescription>
+							<FieldLabel htmlFor="startDate">
+								{t("calendar:create_plan.fields.start_date")}
+							</FieldLabel>
+							<FieldDescription>
+								{t("calendar:create_plan.descriptions.start_date")}
+							</FieldDescription>
 							<Input
 								type="text"
 								id="startDate"
@@ -134,8 +144,12 @@ function CreateCalendarForm({
 							</FieldError>
 						</Field>
 						<Field data-invalid={!!form.formState.errors.endDate}>
-							<FieldLabel htmlFor="endDate">End date</FieldLabel>
-							<FieldDescription>The last day of your trip</FieldDescription>
+							<FieldLabel htmlFor="endDate">
+								{t("calendar:create_plan.fields.end_date")}
+							</FieldLabel>
+							<FieldDescription>
+								{t("calendar:create_plan.descriptions.end_date")}
+							</FieldDescription>
 							<Input
 								type="text"
 								id="endDate"
@@ -148,10 +162,10 @@ function CreateCalendarForm({
 					</section>
 					<Field data-invalid={!!form.formState.errors.destination}>
 						<FieldLabel htmlFor="destination">
-							Destination (optional)
+							{t("calendar:create_plan.fields.destination")}
 						</FieldLabel>
 						<FieldDescription>
-							Where are you going? This can help with suggestions
+							{t("calendar:create_plan.descriptions.destination")}
 						</FieldDescription>
 						<Input
 							type="text"
@@ -172,11 +186,11 @@ function CreateCalendarForm({
 						onClick={onClose}
 						disabled={isPending}
 					>
-						Cancel
+						{t("calendar:create_plan.actions.cancel")}
 					</Button>
 					<Button type="submit" disabled={isPending || !form.formState.isValid}>
 						{isPending && <Spinner />}
-						Create
+						{t("calendar:create_plan.actions.create_plan")}
 					</Button>
 				</DialogFooter>
 			</form>

@@ -2,7 +2,6 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { ViewTransition } from "react"
 import { Disclaimer } from "@/components/disclaimer"
-import { Header } from "@/components/header"
 
 export default async function AuthPage({
 	children,
@@ -18,16 +17,13 @@ export default async function AuthPage({
 	}
 
 	return (
-		<>
-			<Header />
-			<ViewTransition>
-				<main className="flex flex-col items-center justify-center min-h-screen py-2">
-					{children}
-					<section className="pt-4 text-sm text-center text-neutral-600">
-						<Disclaimer />
-					</section>
-				</main>
-			</ViewTransition>
-		</>
+		<ViewTransition>
+			<main className="flex flex-col items-center justify-center flex-1 py-2">
+				{children}
+				<section className="pt-4 text-sm text-center text-neutral-600">
+					<Disclaimer />
+				</section>
+			</main>
+		</ViewTransition>
 	)
 }

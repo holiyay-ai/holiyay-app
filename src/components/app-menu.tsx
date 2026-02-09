@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import { useTheme } from "next-themes"
 import { useCallback, ViewTransition } from "react"
@@ -102,6 +104,7 @@ function ThemeMenu() {
 			<DropdownMenuPortal>
 				<DropdownMenuSubContent>
 					<DropdownMenuItem
+						onSelect={(e) => e.preventDefault()}
 						onClick={() => setTheme("system")}
 						className={cn(
 							theme === "system" && "bg-accent text-accent-foreground",
@@ -110,6 +113,7 @@ function ThemeMenu() {
 						{t("common:theme.system")}
 					</DropdownMenuItem>
 					<DropdownMenuItem
+						onSelect={(e) => e.preventDefault()}
 						onClick={() => setTheme("light")}
 						className={cn(
 							theme === "light" && "bg-accent text-accent-foreground",
@@ -118,6 +122,7 @@ function ThemeMenu() {
 						{t("common:theme.light")}
 					</DropdownMenuItem>
 					<DropdownMenuItem
+						onSelect={(e) => e.preventDefault()}
 						onClick={() => setTheme("dark")}
 						className={cn(
 							theme === "dark" && "bg-accent text-accent-foreground",

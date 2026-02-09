@@ -1,0 +1,77 @@
+{
+	"actions": {
+		"plan": "Plan",
+		"event": "Event",
+		"create_first_plan": "Create your first plan",
+		"open": "Open",
+		"more": "+{{count}} more"
+	},
+	"labels": {
+		"create": "Create new...",
+		"no_plans_found": "No plans found!",
+		"plan_not_found": "Plan not found!",
+		"create_item": "Create new event",
+		"create_item_on": "Create event on {{date}}",
+		"all_day": "All day"
+	},
+	"bodies": {
+		"no_plans_found": "You don't have any plans yet. Start by creating one!",
+		"plan_not_found": "The plan you are looking for does not exist or has been deleted.",
+		"create_item_description": "Fill in the details below to create a new event to your plan."
+	},
+	"fields": {
+		"created_by": "Created by <0></0>"
+	},
+	"placeholders": {
+		"search": "Search in your agenda"
+	},
+	"create_item": {
+		"actions": {
+			"create_event": "Create Event",
+			"cancel": "Cancel"
+		},
+		"labels": {
+			"checklist": "Checklist"
+		},
+		"fields": {
+			"title": "Title",
+			"location": "Location",
+			"start_date": "Start Date",
+			"end_date": "End Date",
+			"all_day": "All Day",
+			"description": "Description",
+			"start_time": "Start Time",
+			"end_time": "End Time",
+			"same_date": "Ends same day"
+		},
+		"descriptions": {
+			"title": "Name of the event",
+			"location": "Where is the event taking place?",
+			"description": "Additional details about the event"
+		}
+	},
+	"create_plan": {
+		"actions": {
+			"create_plan": "Create Plan",
+			"cancel": "Cancel"
+		},
+		"labels": {
+			"create_new_plan": "Create new plan"
+		},
+		"bodies": {
+			"create_new_plan": "Fill in the details below to create a new plan."
+		},
+		"fields": {
+			"name": "Name",
+			"start_date": "Start Date",
+			"end_date": "End Date",
+			"destination": "Destination"
+		},
+		"descriptions": {
+			"name": "Give your plan a name to easily identify it later",
+			"start_date": "When does your plan start?",
+			"end_date": "When does your plan end?",
+			"destination": "Where are you going?"
+		}
+	}
+}
